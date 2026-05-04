@@ -198,26 +198,14 @@ export default function ProductPage() {
 
             <p className="text-xs text-muted-foreground mb-4">شامل الضريبة</p>
 
-            {/* Realistic Popularity Indicator */}
-            <div className="flex items-center gap-3 mb-6 bg-white border border-slate-200 rounded-xl p-2 w-fit shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] hover:shadow-md transition-shadow cursor-default">
-              <div className="flex -space-x-2 -space-x-reverse rtl:space-x-reverse drop-shadow-sm mr-1">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-white flex items-center justify-center text-[11px] font-black text-blue-700 shadow-inner">س</div>
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-50 to-emerald-100 border-2 border-white flex items-center justify-center text-[11px] font-black text-emerald-700 shadow-inner">ن</div>
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-white flex items-center justify-center text-[11px] font-black text-purple-700 shadow-inner">م</div>
-              </div>
-              <div className="flex flex-col ml-2 pr-1">
-                <p className="text-[12px] font-extrabold text-slate-800 flex items-center gap-1">
-                  منتج يكثر الطلب عليه 
-                  <svg className="w-3.5 h-3.5 text-orange-500 drop-shadow-sm" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                </p>
-                <p className="text-[10px] font-medium text-slate-500 mt-0.5 flex items-center gap-1.5">
-                  <span className="relative flex h-1.5 w-1.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
-                  </span>
-                  يشاهده ١٤ عميل في الوقت الحالي
-                </p>
-              </div>
+            {/* Native Salla-style Purchase Indicator */}
+            <div className="flex items-center gap-2 mb-6 px-3 py-2 bg-slate-50 border border-slate-100/80 rounded-md w-fit">
+              <svg className="w-4 h-4 text-orange-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 2.5z"></path>
+              </svg>
+              <p className="text-[11px] text-slate-600 font-medium leading-none mt-0.5">
+                تم شراء هذا المنتج <strong className="text-slate-800 font-bold px-0.5">أكثر من ٥٠ مرة</strong> خلال الساعات الماضية
+              </p>
             </div>
 
             {/* Short description */}
