@@ -244,41 +244,26 @@ export default function OrderForm() {
                 </div>
               </div>
 
-              {/* Premium Service Upsell */}
-              <div className="bg-amber-50/50 border border-amber-200 rounded-xl p-4 mt-2 mb-4 relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-1 h-full bg-amber-500"></div>
-                <div className="absolute -left-6 -top-6 w-20 h-20 bg-amber-500/10 rounded-full blur-xl group-hover:scale-150 transition-transform"></div>
-                
-                <div className="flex items-start gap-3 relative z-10">
-                  <div className="w-12 h-12 rounded-full bg-white border border-amber-100 flex items-center justify-center flex-shrink-0 shadow-sm text-amber-600">
-                    <Shield className="w-6 h-6" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-1.5 mb-1">
-                      <span className="bg-amber-100 text-amber-800 text-[9px] font-black px-1.5 py-0.5 rounded-sm">خدمة مميزة</span>
-                    </div>
-                    <p className="text-sm font-bold text-slate-800 leading-tight">شحن أولوية سريع + تأمين شامل</p>
-                    <p className="text-[10px] text-slate-500 mt-1 leading-relaxed">
-                      تجهيز فوري لطلبك في المستودع مع تغطية تأمينية كاملة ضد التلف أو الفقدان.
-                    </p>
-                    <div className="flex items-center gap-2 mt-1.5">
-                      <span className="text-sm font-black text-amber-700">+ ٢٤ ر.س</span>
-                    </div>
-                  </div>
+              {/* Premium Service Upsell (Native App Style) */}
+              <div 
+                className={`flex items-start gap-3 p-4 mt-2 mb-4 rounded-xl border transition-all cursor-pointer select-none ${formData.addUpsell ? 'border-[#2563eb] bg-[#eff6ff]' : 'border-slate-200 bg-white shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] hover:border-slate-300'}`} 
+                onClick={() => setFormData({...formData, addUpsell: !formData.addUpsell})}
+              >
+                <div className={`mt-0.5 flex shrink-0 items-center justify-center w-5 h-5 rounded border transition-colors ${formData.addUpsell ? 'bg-[#2563eb] border-[#2563eb]' : 'bg-white border-slate-300'}`}>
+                  {formData.addUpsell && <Check className="w-3.5 h-3.5 text-white" />}
                 </div>
-                
-                <label className="flex items-center gap-2.5 mt-3 pt-3 border-t border-amber-100 cursor-pointer relative z-10">
-                  <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${formData.addUpsell ? 'bg-amber-500 border-amber-500' : 'bg-white border-slate-300'}`}>
-                    {formData.addUpsell && <Check className="w-3.5 h-3.5 text-white" />}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-[13px] font-bold text-slate-900 flex items-center gap-1.5">
+                      <Shield className="w-4 h-4 text-[#2563eb]" />
+                      تأمين الشحنة وشحن أولوية
+                    </p>
+                    <span className="text-[12px] font-black text-slate-900">+ ٢٤ ر.س</span>
                   </div>
-                  <input 
-                    type="checkbox" 
-                    className="hidden"
-                    checked={formData.addUpsell || false}
-                    onChange={(e) => setFormData({...formData, addUpsell: e.target.checked})}
-                  />
-                  <span className="text-[12px] font-bold text-slate-700">نعم، أريد حماية وتأمين شحنتي</span>
-                </label>
+                  <p className="text-[10px] text-slate-500 leading-relaxed pr-5">
+                    تجهيز فوري لطلبك وتغطية تأمينية كاملة ضد التلف أو الفقدان لضمان وصوله بأمان.
+                  </p>
+                </div>
               </div>
 
               {/* Total */}
