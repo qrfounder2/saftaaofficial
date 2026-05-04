@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000">
+  <defs>
+    <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#6C4CFF"/>
+      <stop offset="100%" stop-color="#00C6D7"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#g1)"/>
+  <circle cx="280" cy="180" r="180" fill="#ffffff22"/>
+  <circle cx="1390" cy="880" r="240" fill="#ffffff1f"/>
+  <rect x="810" y="140" width="420" height="720" rx="130" fill="#fffefeee"/>
+  <rect x="870" y="230" width="300" height="70" rx="35" fill="#6C4CFF"/>
+  <rect x="870" y="340" width="300" height="260" rx="34" fill="#00C6D7"/>
+  <text x="250" y="450" font-size="82" fill="#ffffff" font-family="Arial" font-weight="700">SAFTAA</text>
+  <text x="250" y="535" font-size="48" fill="#ffffffd0" font-family="Arial">Natural Care Formula</text>
+</svg>
