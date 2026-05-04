@@ -264,29 +264,49 @@ export default function ProductPage() {
               </p>
             </div>
 
-            {/* Stock urgency - Realistic ProgressBar */}
+            {/* Native Stock Inventory Widget */}
             {product.stock && product.stock < 50 && (
-              <div className="mt-4 p-4 bg-rose-50 border border-rose-200 rounded-xl relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-1 bg-rose-500 h-full"></div>
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-xs font-bold text-rose-700 flex items-center gap-1.5">
-                    <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
+              <div className="mt-4 mb-2">
+                <div className="flex items-center gap-2 mb-1.5 px-1">
+                  <div className="w-1.5 h-1.5 rounded-full bg-amber-500"></div>
+                  <p className="text-[11px] font-bold text-slate-500 tracking-wide">تحديث المستودع المباشر</p>
+                </div>
+                <div className="bg-white border border-slate-200 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] rounded-xl p-3.5">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center border border-amber-100/50">
+                        <Package className="w-4 h-4 text-amber-600" />
+                      </div>
+                      <div>
+                        <p className="text-[12px] font-bold text-slate-800">الكمية المتبقية محدودة</p>
+                        <p className="text-[10px] text-slate-500 mt-0.5">مستودع الرياض المركزي</p>
+                      </div>
+                    </div>
+                    <div className="text-center bg-slate-50 border border-slate-100 px-3 py-1.5 rounded-lg shadow-inner">
+                      <p className="text-[14px] font-black text-amber-600 leading-none">{product.stock}</p>
+                      <p className="text-[9px] font-bold text-slate-400 mt-1">قطعة فقط</p>
+                    </div>
+                  </div>
+                  
+                  <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden mb-2">
+                    <motion.div 
+                      initial={{ width: 0 }}
+                      animate={{ width: `${Math.max(10, Math.min((product.stock / 50) * 100, 100))}%` }}
+                      transition={{ duration: 1.2, ease: "easeOut" }}
+                      className="bg-amber-400 h-full rounded-full" 
+                    />
+                  </div>
+                  <div className="flex items-center justify-between text-[9px] font-medium text-slate-400 mt-1">
+                    <span className="flex items-center gap-1">
+                      <svg className="w-2.5 h-2.5 animate-spin-slow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
+                      مزامنة تلقائية
                     </span>
-                    طلب عالي: متبقي {product.stock} قطعة فقط
-                  </p>
-                  <p className="text-[10px] font-bold text-rose-500">{Math.round((product.stock / 100) * 100)}%</p>
+                    <span className="flex items-center gap-1">
+                      <svg className="w-3 h-3 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                      مخزون موثّق
+                    </span>
+                  </div>
                 </div>
-                <div className="w-full bg-rose-200/50 rounded-full h-1.5 overflow-hidden">
-                  <motion.div 
-                    initial={{ width: 0 }}
-                    animate={{ width: `${Math.min((product.stock / 100) * 100, 100)}%` }}
-                    transition={{ duration: 1, ease: "easeOut" }}
-                    className="bg-rose-500 h-full rounded-full" 
-                  />
-                </div>
-                  <p className="text-[10px] text-rose-600/80 mt-2 font-medium">الرجاء إتمام الطلب قبل نفاذ الكمية لتجنب التأخير</p>
               </div>
             )}
 
