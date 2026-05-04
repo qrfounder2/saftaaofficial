@@ -22,15 +22,15 @@ export default function TrendingProducts() {
   const displayProducts = products.length > 0 ? products : allProducts;
 
   return (
-    <section className="py-12 md:py-16 bg-secondary/30">
+    <section className="py-12 md:py-16 bg-slate-50/50">
       <div className="max-w-7xl mx-auto px-4">
         <div className="text-center mb-10">
-          <span className="text-xs font-bold text-primary bg-primary/10 px-4 py-1.5 rounded-full">
-            ⭐ الأكثر طلباً
+          <span className="text-xs font-bold text-slate-800 bg-slate-200/50 px-4 py-1.5 rounded-full border border-slate-200">
+            ⭐ الأكثر مبيعاً في المملكة
           </span>
-          <h2 className="text-2xl md:text-4xl font-black mt-4">المنتجات الأكثر مبيعاً</h2>
-          <p className="text-muted-foreground mt-2 text-sm">
-            منتجات أثبتت فعاليتها السريرية والميدانية مع آلاف العملاء في المملكة
+          <h2 className="text-2xl md:text-4xl font-black mt-4 text-slate-900">أكثر المنتجات طلباً الآن</h2>
+          <p className="text-slate-500 font-medium mt-2 text-sm max-w-2xl mx-auto">
+            منتجات موثوقة ومجربة أثبتت فعاليتها مع آلاف العملاء. اطلبها الآن قبل نفاذ الكمية من المستودع المركزي.
           </p>
         </div>
 

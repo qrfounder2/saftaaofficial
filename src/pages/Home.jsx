@@ -1,7 +1,6 @@
 import React from "react";
 import HeroSlider from "../components/store/HeroSlider";
 import TrustBar from "../components/store/TrustBar";
-import CategoriesSection from "../components/store/CategoriesSection";
 import TrendingProducts from "../components/store/TrendingProducts";
 import Testimonials from "../components/store/Testimonials";
 import FAQ from "../components/store/FAQ";
@@ -124,7 +123,6 @@ export default function Home() {
     <>
       <HeroSlider />
       <TrustBar />
-      <CategoriesSection />
       <TrendingProducts />
       <WhyUsSection />
       <UrgencyBanner />
