@@ -6,24 +6,48 @@ import { ArrowLeft } from "lucide-react";
 const slides = [
   {
     id: 1,
-    title: "الوكيل الحصري",
-    subtitle: "في السعودية 🇸🇦",
-    desc: "احذروا التقليد! نحن الموزع المعتمد والوحيد لمنتجاتنا الأصلية المسجلة في هيئة الغذاء والدواء (SFDA).",
-    cta: "اطلب المنتج الأصلي",
-    badge: "توثيق المركز السعودي للأعمال",
-    image: "/images/hero/hero-1.svg",
+    title: "دهان المرال",
+    subtitle: "المعجزة 🦌",
+    desc: "الخلاص النهائي لخشونة الركبة وعرق النسا. تركيبة طبيعية متطورة لتسكين عميق وفوري بدون أثر دهني.",
+    cta: "اطلب المرال الآن",
+    badge: "المنتج الأكثر مبيعاً",
+    image: "/images/products/almaral-main-final-v2.png",
     gradient: "from-emerald-50/80 to-gray-100",
+    features: ["تسكين فوري", "امتصاص سريع"]
   },
   {
     id: 2,
-    title: "منتجات أصلية",
-    subtitle: "مضمونة 100%",
-    desc: "نضمن لك استرجاع نقودك بالكامل إذا ثبت أن المنتج غير أصلي. تسوق بأمان من المتجر الرسمي.",
-    cta: "تصفح المنتجات الموثقة",
-    badge: "شحن مبرد ومعتمد",
-    image: "/images/hero/hero-2.svg",
-    gradient: "from-gray-100 to-emerald-50/80",
+    title: "ريليف آكتيف",
+    subtitle: "لآلام الديسك ❄️",
+    desc: "جل التبريد العلاجي لاختراق عميق لآلام أسفل الظهر وتشنجات العضلات. راحة تدوم طويلاً.",
+    cta: "تخلص من ألم الظهر",
+    badge: "تقنية التبريد النشط",
+    image: "/images/products/lumbar-spine-gel.png",
+    gradient: "from-blue-50/80 to-slate-100",
+    features: ["تبريد علاجي", "يرخي العضلات"]
   },
+  {
+    id: 3,
+    title: "سم النحل الملكي",
+    subtitle: "للروماتيزم 🐝",
+    desc: "مرهم متطور بخلاصة ببتيدات سم النحل للقضاء على آلام المفاصل والنقرس. الخيار الأول لكبار السن.",
+    cta: "اطلب سم النحل",
+    badge: "موصى به لكبار السن",
+    image: "/images/products/bee-venom-cream.png",
+    gradient: "from-amber-50/80 to-orange-50/50",
+    features: ["مضاد للالتهاب", "آمن للبشرة"]
+  },
+  {
+    id: 4,
+    title: "جوارب التورمالين",
+    subtitle: "الحرارية 🧦",
+    desc: "تقنية العلاج الانعكاسي ذاتية التسخين. تنشط الدورة الدموية وتخفف آلام الأطراف وترفع الطاقة.",
+    cta: "اطلب الجوارب الذكية",
+    badge: "تنشيط الدورة الدموية",
+    image: "/images/products/tourmaline-socks.png",
+    gradient: "from-rose-50/80 to-slate-100",
+    features: ["ذاتية التسخين", "مساج انعكاسي"]
+  }
 ];
 
 export default function HeroSlider() {
@@ -77,7 +101,7 @@ export default function HeroSlider() {
                   {slide.cta}
                   <ArrowLeft className="w-5 h-5" />
                 </Link>
-                <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground mt-2 sm:mt-0">
                   <span className="flex -space-x-2 -space-x-reverse">
                     {[
                       "/images/reviews/saudi-man-1.webp",
@@ -85,14 +109,16 @@ export default function HeroSlider() {
                       "/images/reviews/saudi-man-2.webp",
                       "/images/reviews/saudi-woman-2.webp",
                     ].map((src, i) => (
-                      <img key={i} src={src} alt="" className="w-7 h-7 rounded-full border-2 border-white object-cover" />
+                      <img key={i} src={src} alt="" className="w-8 h-8 rounded-full border-2 border-white object-cover shadow-sm" />
                     ))}
                   </span>
-                  <span className="font-medium">+٥٠ ألف عميل راضي</span>
-                  <div className="flex">
-                    {[1,2,3,4,5].map(s => (
-                      <span key={s} className="text-yellow-400 text-xs">★</span>
-                    ))}
+                  <div className="flex flex-col">
+                    <div className="flex items-center gap-1">
+                      {[1,2,3,4,5].map(s => (
+                        <span key={s} className="text-yellow-400 text-sm">★</span>
+                      ))}
+                    </div>
+                    <span className="font-bold text-xs">+٥٠ ألف عميل راضي</span>
                   </div>
                 </div>
               </div>
@@ -104,11 +130,31 @@ export default function HeroSlider() {
               <img
                 src={slide.image}
                 alt={slide.title}
-                className="relative w-full h-[280px] md:h-[450px] object-cover rounded-3xl elegant-surface"
+                className="relative w-full h-[280px] md:h-[450px] object-contain p-6 md:p-12 rounded-3xl elegant-surface"
               />
-              {/* Floating trust badge - Hyper Realistic Official Style */}
+              
+              {/* Floating Features - Top Left */}
               <motion.div
-                initial={{ x: -20, opacity: 0 }}
+                initial={{ y: -20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.3 }}
+                className="absolute top-6 left-6 bg-white/95 backdrop-blur-md rounded-2xl p-3 shadow-xl border border-white/50 elegant-surface"
+              >
+                <div className="flex flex-col gap-2">
+                  {slide.features.map((feature, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+                        <svg className="w-3 h-3 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      </div>
+                      <span className="text-xs font-bold text-slate-800">{feature}</span>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+
+              {/* Floating trust badge - Bottom Right */}
+              <motion.div
+                initial={{ x: 20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ delay: 0.5 }}
                 className="absolute bottom-6 right-6 bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-2xl border border-white/50 elegant-surface"
