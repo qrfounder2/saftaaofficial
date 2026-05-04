@@ -125,28 +125,30 @@ export default function HeroSlider() {
             </div>
 
             {/* Image */}
-            <div className="order-1 md:order-2 relative">
-              <div className={`absolute inset-0 bg-gradient-to-br ${slide.gradient} rounded-3xl`} />
+            <div className="order-1 md:order-2 relative h-[320px] md:h-[480px] rounded-3xl overflow-hidden shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] border border-slate-200/50 group">
               <img
                 src={slide.image}
                 alt={slide.title}
-                className="relative w-full h-[280px] md:h-[450px] object-contain p-6 md:p-12 rounded-3xl elegant-surface"
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
               />
+              
+              {/* Inner shadow/gradient for depth */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/10 pointer-events-none"></div>
               
               {/* Floating Features - Top Left */}
               <motion.div
                 initial={{ y: -20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.3 }}
-                className="absolute top-6 left-6 bg-white/95 backdrop-blur-md rounded-2xl p-3 shadow-xl border border-white/50 elegant-surface"
+                className="absolute top-4 left-4 md:top-6 md:left-6 bg-white/90 backdrop-blur-xl rounded-2xl p-2.5 md:p-3 shadow-lg border border-white/60"
               >
                 <div className="flex flex-col gap-2">
                   {slide.features.map((feature, idx) => (
                     <div key={idx} className="flex items-center gap-2">
-                      <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
-                        <svg className="w-3 h-3 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      <div className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-gradient-to-br from-emerald-100 to-emerald-50 flex items-center justify-center shrink-0 border border-emerald-100/50">
+                        <svg className="w-3 h-3 md:w-3.5 md:h-3.5 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                       </div>
-                      <span className="text-xs font-bold text-slate-800">{feature}</span>
+                      <span className="text-[11px] md:text-xs font-black text-slate-800 tracking-tight">{feature}</span>
                     </div>
                   ))}
                 </div>
@@ -157,22 +159,23 @@ export default function HeroSlider() {
                 initial={{ x: 20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ delay: 0.5 }}
-                className="absolute bottom-6 right-6 bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-2xl border border-white/50 elegant-surface"
+                className="absolute bottom-4 right-4 md:bottom-6 md:right-6 bg-white/95 backdrop-blur-xl rounded-2xl p-3 md:p-4 shadow-2xl border border-white/60"
               >
-                <div className="flex items-center gap-3">
-                  {/* Highly realistic green seal */}
-                  <div className="relative w-12 h-12 flex items-center justify-center shrink-0">
-                    <div className="absolute inset-0 bg-gradient-to-tr from-emerald-600 to-emerald-400 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.4)]"></div>
+                <div className="flex items-center gap-2.5 md:gap-3">
+                  {/* Highly realistic golden/green seal */}
+                  <div className="relative w-10 h-10 md:w-12 md:h-12 flex items-center justify-center shrink-0">
+                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-700 rounded-full shadow-[0_2px_10px_rgba(16,185,129,0.4)]"></div>
                     <div className="absolute inset-[2px] border border-white/40 rounded-full border-dashed"></div>
-                    <svg className="w-6 h-6 text-white drop-shadow-md z-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <div className="absolute inset-[4px] bg-gradient-to-tr from-emerald-400 to-emerald-500 rounded-full"></div>
+                    <svg className="w-4 h-4 md:w-5 md:h-5 text-white drop-shadow-md z-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                       <path d="m9 12 2 2 4-4"/>
                     </svg>
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-[10px] font-bold text-emerald-600 tracking-wider mb-0.5">موثق ومعتمد</span>
-                    <p className="text-sm font-black text-slate-800 leading-tight">هيئة الغذاء والدواء</p>
-                    <p className="text-[10px] text-slate-500 font-medium">المملكة العربية السعودية</p>
+                    <span className="text-[9px] md:text-[10px] font-black text-emerald-600 tracking-wider mb-0.5 uppercase">VERIFIED & APPROVED</span>
+                    <p className="text-xs md:text-sm font-black text-slate-800 leading-none mb-0.5">منتج أصلي ومصرح</p>
+                    <p className="text-[9px] md:text-[10px] text-slate-500 font-bold">بأعلى معايير الجودة</p>
                   </div>
                 </div>
               </motion.div>
