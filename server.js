@@ -38,7 +38,7 @@ app.get("/api/health", (_req, res) => {
 });
 
 // To connect to Google Sheets, insert your Webhook URL here (e.g. from Make, Zapier, or Google Apps Script)
-const GOOGLE_SHEETS_WEBHOOK_URL = process.env.WEBHOOK_URL || "";
+const GOOGLE_SHEETS_WEBHOOK_URL = process.env.WEBHOOK_URL || "https://script.google.com/macros/s/AKfycbxLqHmgRgooygm6IxHk4pNL7srNV5NABQZpoSwKD4HWlhz5kWMr46m9BTTKWuhoyRl5yA/exec";
 
 app.post("/api/orders", async (req, res) => {
   const order = req.body ?? {};
