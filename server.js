@@ -37,7 +37,10 @@ app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", service: "saftaa-care-hub" });
 });
 
-app.post("/api/orders", (req, res) => {
+// To connect to Google Sheets, insert your Webhook URL here (e.g. from Make, Zapier, or Google Apps Script)
+const GOOGLE_SHEETS_WEBHOOK_URL = process.env.WEBHOOK_URL || "";
+
+app.post("/api/orders", async (req, res) => {
   const order = req.body ?? {};
   const required = [
     "customer_name",
@@ -55,17 +58,60 @@ app.post("/api/orders", (req, res) => {
   }
 
   const id = `ORD-${Date.now().toString().slice(-8)}`;
+  
+  // Format product name and SKU if upsell is included
+  let finalProductName = order.product_name;
+  let finalSku = order.product_id;
+  let finalNotes = order.notes || "";
+  
+  if (order.has_upsell) {
+    finalProductName += " + زيت التدليك العضوي (Upsell)";
+    finalSku += " + UPSELL-OIL-01";
+  }
+
   const stored = {
     id,
     created_at: new Date().toISOString(),
     status: "pending",
     payment_method: "cod",
     ...order,
+    product_name: finalProductName,
+    product_id: finalSku,
   };
 
   const orders = readOrders();
   orders.unshift(stored);
   writeOrders(orders);
+
+  // Send to CODNetwork / Google Sheets Webhook
+  if (GOOGLE_SHEETS_WEBHOOK_URL) {
+    try {
+      const sheetPayload = {
+        OrderDate: stored.created_at,
+        country: "SA",
+        name: stored.customer_name,
+        phone: stored.phone,
+        address: `${stored.city} - ${stored.address}`,
+        url: "https://saftaa.shop",
+        sku: finalSku,
+        Product: finalProductName,
+        quantity: stored.quantity_pack || "1",
+        price: stored.total_price,
+        currency: "SAR",
+        notes: finalNotes,
+      };
+
+      await fetch(GOOGLE_SHEETS_WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(sheetPayload)
+      });
+      console.log(`Successfully pushed lead ${id} to Google Sheets`);
+    } catch (e) {
+      console.error("Failed to push lead to Google Sheets webhook:", e);
+    }
+  }
+
   res.status(201).json(stored);
 });
 

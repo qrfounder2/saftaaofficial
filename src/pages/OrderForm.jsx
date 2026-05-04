@@ -32,6 +32,7 @@ export default function OrderForm() {
     city: "",
     address: "",
     notes: "",
+    isSubscription: false,
   });
   const [errors, setErrors] = useState({});
 
@@ -42,8 +43,9 @@ export default function OrderForm() {
     enabled: !!productId,
   });
 
-  const totalPrice = priceParam ? Number(priceParam) : product?.price || 0;
-  const packLabel = pack === "3" ? "٣ عبوات" : pack === "2" ? "عبوتين" : "عبوة واحدة";
+  const basePrice = priceParam ? Number(priceParam) : product?.price || 0;
+  const totalPrice = basePrice + (formData.addUpsell ? 49 : 0);
+  const packLabel = pack === "5" ? "٥ عبوات" : pack === "3" ? "٣ عبوات" : "عبوة واحدة";
 
   const createOrder = useMutation({
     mutationFn: (orderData) => storeClient.entities.Order.create(orderData),
@@ -82,6 +84,7 @@ export default function OrderForm() {
       payment_method: "cod",
       notes: formData.notes,
       status: "pending",
+      has_upsell: formData.addUpsell,
     });
   };
 
@@ -141,8 +144,8 @@ export default function OrderForm() {
                 <MapPin className="w-4 h-4 text-black" />
               </div>
               <div>
-                <h2 className="font-bold text-sm">أين نقوم بتوصيل طلبك؟</h2>
-                <p className="text-[10px] text-muted-foreground">أدخل بياناتك لنوصل طلبك لغاية باب بيتك</p>
+                <h2 className="font-bold text-sm">أين نرسل طلبك؟</h2>
+                <p className="text-[10px] text-muted-foreground">الرجاء إدخال بيانات التوصيل بدقة لضمان وصول شحنتك بسرعة</p>
               </div>
             </div>
 
@@ -233,12 +236,48 @@ export default function OrderForm() {
                     </svg>
                   </div>
                   <div>
-                    <p className="text-[11px] font-bold text-blue-900 leading-relaxed mb-0.5">تحديث بوابات الدفع الإلكتروني</p>
+                    <p className="text-[11px] font-bold text-blue-900 leading-relaxed mb-0.5">الدفع عند الاستلام متاح مجاناً</p>
                     <p className="text-[10px] text-blue-700 leading-relaxed">
-                      نقوم حالياً بتحديث بوابات الدفع الإلكتروني (مدى، آبل باي، وغيرها). لضمان راحتك وتجربة تسوقك، قمنا بتفعيل خدمة <strong>(الدفع عند الاستلام)</strong> بدون أي رسوم إضافية.
+                      لسلامتك وراحتك، وفرنا خدمة (الدفع عند الاستلام). عاين منتجك بنفسك ولا تدفع ريالاً واحداً حتى تستلمه بيدك.
                     </p>
                   </div>
                 </div>
+              </div>
+
+              {/* Cross-sell / Upsell */}
+              <div className="bg-emerald-50/50 border border-emerald-200 rounded-xl p-4 mt-2 mb-4 relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-1 h-full bg-emerald-500"></div>
+                <div className="absolute -left-6 -top-6 w-20 h-20 bg-emerald-500/10 rounded-full blur-xl group-hover:scale-150 transition-transform"></div>
+                
+                <div className="flex items-start gap-3 relative z-10">
+                  <div className="w-16 h-16 rounded-xl bg-white border border-emerald-100 flex-shrink-0 overflow-hidden p-1 shadow-sm">
+                    {/* Placeholder image for cross-sell (e.g. pain relief oil) */}
+                    <img src="/images/categories/cat-joints.webp" alt="زيت التدليك" className="w-full h-full object-cover rounded-lg" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <span className="bg-emerald-100 text-emerald-700 text-[9px] font-black px-1.5 py-0.5 rounded-sm">عرض حصري</span>
+                    </div>
+                    <p className="text-sm font-bold text-slate-800 leading-tight">زيت التدليك العضوي السريع (Upsell)</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-sm font-black text-emerald-700">+ ٤٩ ر.س</span>
+                      <span className="text-[10px] text-slate-400 line-through">٩٩ ر.س</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <label className="flex items-center gap-2.5 mt-3 pt-3 border-t border-emerald-100 cursor-pointer relative z-10">
+                  <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${formData.addUpsell ? 'bg-emerald-500 border-emerald-500' : 'bg-white border-slate-300'}`}>
+                    {formData.addUpsell && <Check className="w-3.5 h-3.5 text-white" />}
+                  </div>
+                  <input 
+                    type="checkbox" 
+                    className="hidden"
+                    checked={formData.addUpsell || false}
+                    onChange={(e) => setFormData({...formData, addUpsell: e.target.checked})}
+                  />
+                  <span className="text-[12px] font-bold text-slate-700">نعم، أضف هذا المنتج لطلبي</span>
+                </label>
               </div>
 
               {/* Total */}
@@ -295,14 +334,14 @@ export default function OrderForm() {
             </div>
           </div>
           {/* Real Payment / Trust Badges */}
-          <div className="flex items-center justify-center gap-2 mt-5 flex-wrap">
-            <span className="text-[10px] text-gray-500 ml-1 font-medium">طرق الدفع الآمنة:</span>
-            <img src={paymentIcons.mada} alt="mada" className="h-4 object-contain" />
-            <img src={paymentIcons.visa} alt="visa" className="h-4 object-contain" />
-            <img src={paymentIcons.mastercard} alt="mastercard" className="h-4 object-contain" />
-            <img src={paymentIcons.applepay} alt="apple pay" className="h-4 object-contain" />
-            <img src={paymentIcons.tabby} alt="tabby" className="h-4 object-contain" />
-            <img src={paymentIcons.tamara} alt="tamara" className="h-4 object-contain" />
+          <div className="flex items-center justify-center gap-1.5 mt-5 flex-nowrap w-full overflow-x-auto pb-1">
+            <span className="text-[10px] text-gray-500 ml-1 font-medium whitespace-nowrap">طرق الدفع الآمنة:</span>
+            <img src={paymentIcons.mada} alt="mada" className="h-3.5 object-contain shrink-0" />
+            <img src={paymentIcons.visa} alt="visa" className="h-3.5 object-contain shrink-0" />
+            <img src={paymentIcons.mastercard} alt="mastercard" className="h-3.5 object-contain shrink-0" />
+            <img src={paymentIcons.applepay} alt="apple pay" className="h-3.5 object-contain shrink-0" />
+            <img src={paymentIcons.tabby} alt="tabby" className="h-3.5 object-contain shrink-0" />
+            <img src={paymentIcons.tamara} alt="tamara" className="h-3.5 object-contain shrink-0" />
           </div>
         </motion.div>
       </div>
