@@ -48,28 +48,29 @@ export default function ThankYou() {
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ type: "spring", duration: 0.6 }}
-          className="text-center mb-8"
+          className="text-center mb-8 pt-4"
         >
-          <div className="w-20 h-20 mx-auto bg-primary/10 rounded-full flex items-center justify-center mb-4">
+          <div className="w-24 h-24 mx-auto bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center mb-5 shadow-[0_10px_30px_-10px_rgba(16,185,129,0.5)]">
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ delay: 0.3, type: "spring" }}
             >
-              <Check className="w-10 h-10 text-primary" />
+              <Check className="w-12 h-12 text-white" strokeWidth={3} />
             </motion.div>
           </div>
 
-          <h1 className="text-2xl md:text-3xl font-black mb-2">
-            تم تأكيد طلبك بنجاح! 🎉
+          <h1 className="text-2xl md:text-3xl font-black text-slate-800 mb-2">
+            تم تسجيل طلبك بنجاح!
           </h1>
-          <p className="text-muted-foreground">
-            شكراً لك {customerName && <span className="font-bold text-foreground">{decodeURIComponent(customerName)}</span>}، طلبك في الطريق إليك!
+          <p className="text-slate-500 font-medium">
+            شكراً لثقتك بنا {customerName && <span className="font-bold text-slate-800">{decodeURIComponent(customerName)}</span>}، طلبك الآن قيد التجهيز.
           </p>
           {orderId && (
-            <p className="text-xs text-muted-foreground mt-1">
-              رقم الطلب: <span className="font-mono font-bold">{orderId}</span>
-            </p>
+            <div className="mt-4 inline-flex items-center gap-2 bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm">
+              <span className="text-xs text-slate-500 font-bold">رقم الطلب:</span>
+              <span className="font-mono font-black text-slate-800 tracking-wider">{orderId}</span>
+            </div>
           )}
         </motion.div>
 
@@ -78,46 +79,48 @@ export default function ThankYou() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="bg-card rounded-2xl border p-5 mb-6"
+          className="bg-white rounded-2xl border border-slate-200 p-6 mb-6 shadow-sm"
         >
-          <h2 className="font-bold text-sm mb-4 flex items-center gap-2">
-            <span className="text-lg">📋</span>
-            خطوات مهمة — الرجاء قراءتها
+          <h2 className="font-black text-sm mb-5 text-slate-800 flex items-center gap-2">
+            <svg className="w-5 h-5 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            ماذا سيحدث الآن؟
           </h2>
 
-          <div className="space-y-4">
-            <div className="flex items-start gap-3 p-3 bg-primary/5 rounded-xl">
-              <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0 text-sm font-bold">
+          <div className="space-y-4 relative">
+            <div className="absolute right-[19px] top-6 bottom-6 w-0.5 bg-slate-100"></div>
+
+            <div className="flex items-start gap-4 relative z-10">
+              <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 border-4 border-white flex items-center justify-center shrink-0 text-sm font-black shadow-sm">
                 1
               </div>
-              <div>
-                <p className="text-sm font-bold">سيتواصل معك فريقنا خلال ساعات</p>
-                <p className="text-xs text-muted-foreground">
-                  سنتصل بك لتأكيد الطلب والعنوان. <span className="font-bold text-destructive">الرجاء الرد على المكالمة</span> حتى لا يتأخر طلبك.
+              <div className="pt-2">
+                <p className="text-sm font-bold text-slate-800">تأكيد سريع للطلب</p>
+                <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                  سيتواصل معك أحد موظفينا قريباً لتأكيد تفاصيل العنوان والطلب.
                 </p>
               </div>
             </div>
 
-            <div className="flex items-start gap-3 p-3 bg-accent/5 rounded-xl">
-              <div className="w-8 h-8 rounded-full bg-accent text-accent-foreground flex items-center justify-center shrink-0 text-sm font-bold">
+            <div className="flex items-start gap-4 relative z-10">
+              <div className="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 border-4 border-white flex items-center justify-center shrink-0 text-sm font-black shadow-sm">
                 2
               </div>
-              <div>
-                <p className="text-sm font-bold">جهّز المبلغ عند التوصيل</p>
-                <p className="text-xs text-muted-foreground">
-                  الدفع نقداً عند الاستلام. تأكد من وجود المبلغ المطلوب لتسهيل عملية التوصيل.
+              <div className="pt-2">
+                <p className="text-sm font-bold text-slate-800">تجهيز وشحن فوري</p>
+                <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                  يتم تغليف طلبك بعناية وتسليمه لشركة الشحن لضمان وصوله بأسرع وقت.
                 </p>
               </div>
             </div>
 
-            <div className="flex items-start gap-3 p-3 bg-secondary rounded-xl">
-              <div className="w-8 h-8 rounded-full bg-foreground text-background flex items-center justify-center shrink-0 text-sm font-bold">
+            <div className="flex items-start gap-4 relative z-10">
+              <div className="w-10 h-10 rounded-full bg-purple-50 text-purple-600 border-4 border-white flex items-center justify-center shrink-0 text-sm font-black shadow-sm">
                 3
               </div>
-              <div>
-                <p className="text-sm font-bold">استلم طلبك خلال ١-٣ أيام عمل</p>
-                <p className="text-xs text-muted-foreground">
-                  سيصلك المنتج مغلّف بعناية. تأكد من فحصه عند الاستلام.
+              <div className="pt-2">
+                <p className="text-sm font-bold text-slate-800">الدفع عند الاستلام براحة تامة</p>
+                <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                  استلم طلبك خلال ١-٣ أيام وادفع لمندوب التوصيل (نقداً أو بالشبكة).
                 </p>
               </div>
             </div>
@@ -129,14 +132,17 @@ export default function ThankYou() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          className="bg-destructive/5 border border-destructive/10 rounded-2xl p-5 mb-6 text-center"
+          className="bg-amber-50 border border-amber-200/60 rounded-2xl p-5 mb-6 flex items-start gap-3 shadow-inner"
         >
-          <Phone className="w-8 h-8 mx-auto text-destructive mb-2" />
-          <h3 className="font-bold mb-1">⚠️ مهم جداً</h3>
-          <p className="text-sm text-muted-foreground">
-            عند اتصال فريق التوصيل بك، <span className="font-bold text-foreground">الرجاء الرد فوراً</span> لتأكيد طلبك.
-            عدم الرد قد يؤدي لإلغاء الطلب.
-          </p>
+          <div className="bg-amber-100 p-2 rounded-full shrink-0">
+            <Phone className="w-5 h-5 text-amber-700" />
+          </div>
+          <div>
+            <h3 className="font-bold text-amber-900 text-sm mb-1">الرجاء إبقاء هاتفك قريباً</h3>
+            <p className="text-[11px] text-amber-700/80 leading-relaxed font-medium">
+              سيتم الاتصال بك قريباً من قبل فريقنا. لتجنب أي تأخير في الشحن، نرجو منك الرد على المكالمة لتأكيد عنوانك.
+            </p>
+          </div>
         </motion.div>
 
         {/* WhatsApp support */}

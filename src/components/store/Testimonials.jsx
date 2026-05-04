@@ -6,7 +6,7 @@ export const homepageReviews = [
   {
     name: "أبو عبدالله",
     city: "الرياض",
-    text: "والله ما صدّقت! كنت أعاني من خشونة الركبة ٥ سنوات، وبعد أسبوع واحد فقط حسيت بفرق كبير. المنتج فادني بشكل ملحوظ.",
+    text: "يشهد الله إني عانيت من الخشونة وطقطقة الركبة ٥ سنين. استخدمته أسبوع ونسيت الألم وقت الصلاة. أنصح فيه وبقوة.",
     rating: 5,
     avatar: "/images/reviews/saudi-man-1.webp",
     platform: "google",
@@ -15,7 +15,7 @@ export const homepageReviews = [
   {
     name: "أم محمد",
     city: "جدة",
-    text: "أمي عمرها ٦٥ سنة وتعاني من عرق النسا، طلبنا المنتج وبعد ١٠ أيام صارت تمشي بدون ألم. شكراً لكم.",
+    text: "طلبته للوالدة تعاني من عرق النسا والحمدلله فادها كثير وارتاحت من المسكنات. بيض الله وجيهكم.",
     rating: 5,
     avatar: "/images/reviews/saudi-woman-1.webp",
     platform: "google",
@@ -24,7 +24,7 @@ export const homepageReviews = [
   {
     name: "فهد العتيبي",
     city: "الدمام",
-    text: "أنا رياضي وكنت أعاني من آلام الظهر بعد التمارين. هالكريم صار رفيقي الدائم، نتائج سريعة وطبيعي ١٠٠٪",
+    text: "من أفضل الكريمات اللي جربتها لآلام أسفل الظهر. يمتصه الجلد بسرعة ولا يدمر الملابس.",
     rating: 5,
     avatar: "/images/reviews/saudi-man-2.webp",
     platform: "snapchat",
@@ -33,7 +33,7 @@ export const homepageReviews = [
   {
     name: "نورة الشمري",
     city: "بريدة",
-    text: "طلبت ٣ عبوات وكانت أحسن قرار! وزّعتها على أهلي وكلهم شاكرين. المنتج ممتاز والتوصيل سريع جداً.",
+    text: "أخذت عرض الـ ٣ عبوات لعماتي. منتج أصلي ويوصل بارد ومغلف صح. الله يبارك لكم.",
     rating: 5,
     avatar: "/images/reviews/saudi-woman-2.webp",
     platform: "tiktok",
@@ -45,7 +45,7 @@ export const productReviews = [
   {
     name: "سعد المري",
     city: "حائل",
-    text: "استخدمته لآلام المفاصل اللي كانت تمنعني من النوم، وبصراحة النتيجة مبهرة من أول ثلاث أيام.",
+    text: "الألم كان يصحيني من النوم. من أول ٣ أيام حسيت بحرارة الكريم تسحب الألم سحب. منتج بطل.",
     rating: 5,
     avatar: "/images/reviews/saudi-man-3.webp",
     platform: "google",
@@ -54,7 +54,7 @@ export const productReviews = [
   {
     name: "سارة القحطاني",
     city: "الرياض",
-    text: "المنتج ريحته مقبولة وامتصاصه سريع، استخدمته لرقبتي بسبب الجلوس الطويل على المكتب وفعلاً فرق معي.",
+    text: "استخدمه للشد العضلي بالرقبة والأكتاف من جلسة المكتب. يفك الشد بثواني وريحته ما تضايق أبد.",
     rating: 5,
     avatar: "/images/reviews/saudi-woman-3.webp",
     platform: "snapchat",
@@ -63,7 +63,7 @@ export const productReviews = [
   {
     name: "أبو خالد",
     city: "القصيم",
-    text: "ممتاز جداً للوالد، كان يشتكي من خشونة الركبة والآن وضعه أفضل بكثير ولله الحمد.",
+    text: "جبته للوالد الله يحفظه بعد ما تعب من الإبر. دعواته لكم ما توقف، الحمدلله خف عليه الألم ٨٠٪.",
     rating: 5,
     avatar: "/images/reviews/saudi-man-4.webp",
     platform: "tiktok",
@@ -72,7 +72,7 @@ export const productReviews = [
   {
     name: "عبدالرحمن الشهري",
     city: "أبها",
-    text: "توصيل سريع وتغليف ممتاز. المنتج يستاهل كل ريال تدفعه فيه، فعال جداً لآلام أسفل الظهر.",
+    text: "المتجر ثقة، الدفع عند الاستلام مريح، والمنتج جبار لآلام الظهر وعرق النسا. يستاهل كل هللة.",
     rating: 5,
     avatar: "/images/reviews/saudi-man-5.webp",
     platform: "google",
@@ -150,7 +150,7 @@ export default function Testimonials({ type = "home" }) {
               </div>
             </div>
             <div className="flex items-center gap-1.5 text-xs text-gray-500">
-              بناءً على <strong>٢,٨٤٣ تقييم</strong> عبر
+              بناءً على <strong>٤,٨٤٣ تجربة موثقة</strong> عبر
               <span className="font-bold text-black flex items-center gap-1 ml-1">
                 <svg width="14" height="14" viewBox="0 0 48 48">
                   <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>

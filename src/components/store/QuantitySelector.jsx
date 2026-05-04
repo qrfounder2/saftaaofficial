@@ -6,7 +6,7 @@ export default function QuantitySelector({ product, selected, onSelect }) {
   const packs = [
     {
       id: "1",
-      label: "عبوة واحدة",
+      label: "الكورس المبدئي (عبوة واحدة)",
       qty: 1,
       price: product.price,
       originalPrice: product.compare_price || null,
@@ -14,22 +14,22 @@ export default function QuantitySelector({ product, selected, onSelect }) {
       save: null,
     },
     {
-      id: "2",
-      label: "عبوتين",
-      qty: 2,
+      id: "3",
+      label: "الكورس العلاجي (٣ عبوات)",
+      qty: 3,
       price: product.two_pack_price || Math.round(product.price * 1.85),
-      originalPrice: (product.compare_price || product.price) * 2,
-      badge: "الأكثر مبيعاً",
-      save: "وفّر ١٥٪",
+      originalPrice: (product.compare_price || product.price) * 3,
+      badge: "الخيار المفضل للمتعافين",
+      save: "وفّر ٣٠٪",
     },
     {
-      id: "3",
-      label: "٣ عبوات",
-      qty: 3,
+      id: "5",
+      label: "الكورس المكثف (٥ عبوات)",
+      qty: 5,
       price: product.three_pack_price || Math.round(product.price * 2.55),
-      originalPrice: (product.compare_price || product.price) * 3,
-      badge: "التوفير الأكبر",
-      save: "وفّر ٢٥٪ + شحن مجاني",
+      originalPrice: (product.compare_price || product.price) * 5,
+      badge: "أفضل قيمة علاجية",
+      save: "وفّر ٤٥٪ + شحن مجاني",
     },
   ];
 

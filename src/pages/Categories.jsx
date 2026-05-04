@@ -40,9 +40,9 @@ export default function Categories() {
           <span className="inline-block bg-emerald-800 text-emerald-100 px-3 py-1 rounded-full text-xs font-bold mb-4 border border-emerald-700/50">
             الوكيل الحصري والموزع المعتمد 🇸🇦
           </span>
-          <h1 className="text-3xl md:text-5xl font-black mb-3">الصيدلية المتكاملة</h1>
+          <h1 className="text-3xl md:text-5xl font-black mb-3">الحلول الطبية المتكاملة</h1>
           <p className="text-emerald-100 text-sm max-w-lg mx-auto">
-            جميع المنتجات هنا أصلية 100٪، مخزنة وفق اشتراطات هيئة الغذاء والدواء (SFDA)، ونضمن استرجاع أموالك بالكامل في حال ثبوت العكس.
+            نوفر لك خيارات علاجية موثوقة ومصرحة، مطابقة لاعتمادات هيئة الغذاء والدواء السعودية (SFDA) مع ضمان الفعالية والأمان.
           </p>
         </div>
       </div>

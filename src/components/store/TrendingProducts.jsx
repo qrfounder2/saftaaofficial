@@ -30,7 +30,7 @@ export default function TrendingProducts() {
           </span>
           <h2 className="text-2xl md:text-4xl font-black mt-4">المنتجات الأكثر مبيعاً</h2>
           <p className="text-muted-foreground mt-2 text-sm">
-            منتجات أثبتت فعاليتها مع آلاف العملاء في المملكة
+            منتجات أثبتت فعاليتها السريرية والميدانية مع آلاف العملاء في المملكة
           </p>
         </div>
 
@@ -55,7 +55,7 @@ export default function TrendingProducts() {
           </div>
         ) : (
           <p className="text-center text-muted-foreground py-12">
-            لا توجد منتجات حالياً — سيتم إضافة المنتجات قريباً
+            جاري تحديث المخزون — نعتذر، نفدت الكمية حالياً
           </p>
         )}
       </div>

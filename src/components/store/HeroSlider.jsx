@@ -72,7 +72,7 @@ export default function HeroSlider() {
               <div className="flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
                 <Link
                   to="/categories"
-                className="inline-flex items-center justify-center gap-2 bg-black text-white px-8 py-4 rounded-full text-base font-bold hover:bg-gray-800 transition-all hover:scale-105 shadow-lg shadow-black/20"
+                className="inline-flex items-center justify-center gap-2 bg-slate-900 text-white px-8 py-4 rounded-2xl text-base font-black hover:bg-slate-800 transition-all hover:-translate-y-1 shadow-lg shadow-slate-900/20"
                 >
                   {slide.cta}
                   <ArrowLeft className="w-5 h-5" />

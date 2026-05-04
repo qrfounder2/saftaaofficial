@@ -26,15 +26,15 @@ export default function Navbar() {
   return (
     <>
       {/* Top announcement bar */}
-      <div className="bg-black text-white py-1.5 md:py-2 text-[10px] md:text-sm font-bold flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
+      <div className="bg-slate-900 text-white py-2 text-[10px] md:text-xs font-bold flex flex-wrap items-center justify-center gap-x-6 gap-y-1">
         <span className="flex items-center gap-1.5">
           <svg className="w-3.5 h-3.5 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="1" y="3" width="15" height="13" rx="1"></rect><path d="M16 8h4l3 3v5h-7V8z"></path><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
-          توصيل مجاني لجميع مناطق المملكة - الدفع عند الاستلام
+          شحن مجاني لكافة مدن المملكة
         </span>
-        <span className="hidden md:flex text-gray-500">|</span>
-        <span className="flex items-center gap-1.5 text-emerald-300">
+        <span className="hidden md:flex text-slate-600">|</span>
+        <span className="flex items-center gap-1.5 text-amber-400">
           <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
-          متجر سعودي موثق ومسجل
+          الدفع عند الاستلام متاح مجاناً
         </span>
       </div>
 

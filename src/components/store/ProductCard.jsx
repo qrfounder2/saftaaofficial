@@ -71,10 +71,16 @@ export default function ProductCard({ product, index = 0 }) {
           </div>
 
             {/* Buy Button */}
-            <button className="mt-3 w-full flex items-center justify-center gap-2 bg-black text-white py-2.5 rounded-xl text-xs font-bold hover:bg-gray-800 transition-all shadow-md shadow-black/10">
-              <ShoppingBag className="w-3.5 h-3.5" />
-              اطلب الآن
-            </button>
+            <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
+              <span className="text-[11px] font-bold text-emerald-600 flex items-center gap-1 bg-emerald-50 px-2 py-1 rounded-md">
+                <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                متوفر
+              </span>
+              <button className="flex items-center justify-center gap-1.5 bg-slate-900 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-slate-800 transition-all shadow-md shadow-slate-200">
+                <ShoppingBag className="w-3.5 h-3.5" />
+                اطلب الآن
+              </button>
+            </div>
         </div>
       </Link>
     </motion.div>

@@ -20,10 +20,10 @@ export default function CategoriesSection() {
       <div className="max-w-7xl mx-auto px-4">
         <div className="text-center mb-10">
           <span className="text-xs font-bold text-accent bg-accent/10 px-4 py-1.5 rounded-full">
-            تسوّق حسب المشكلة
+            الحلول العلاجية
           </span>
           <h2 className="text-2xl md:text-4xl font-black mt-4">تسوّق حسب القسم</h2>
-          <p className="text-muted-foreground mt-2 text-sm">أقسام صيدلية متكاملة لتلبية جميع احتياجاتك الصحية</p>
+          <p className="text-muted-foreground mt-2 text-sm">خيارات مدروسة لتلبية احتياجاتك الصحية بأعلى معايير الجودة</p>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">

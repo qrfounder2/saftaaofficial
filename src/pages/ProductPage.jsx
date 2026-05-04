@@ -25,7 +25,7 @@ export default function ProductPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [selectedImage, setSelectedImage] = useState(0);
-  const [selectedPack, setSelectedPack] = useState("2");
+  const [selectedPack, setSelectedPack] = useState("3");
   const [packData, setPackData] = useState(null);
 
   const { data: product, isLoading } = useQuery({
@@ -49,6 +49,14 @@ export default function ProductPage() {
     const price = packData?.price || product?.price;
     const qty = packData?.id || "1";
     navigate(`/order?product=${id}&pack=${qty}&price=${price}`);
+  };
+
+  const scrollToCTA = () => {
+    const element = document.getElementById('cta-section');
+    if (element) {
+      const y = element.getBoundingClientRect().top + window.scrollY - 100;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    }
   };
 
   if (isLoading) {
@@ -234,9 +242,12 @@ export default function ProductPage() {
               </div>
             </div>
 
-            {/* Quantity Packs */}
-            <div className="mb-6">
-              <h3 className="text-sm font-bold mb-3">اختر الكمية:</h3>
+            {/* Premium Minimalist CTA Section */}
+            <div id="cta-section" className="mb-6 bg-gray-100 border border-gray-200 rounded-2xl p-5 md:p-6">
+              <div className="flex items-center justify-between mb-5">
+                <h3 className="text-base md:text-lg font-bold text-gray-900">اختر العرض المناسب لك لإتمام الطلب:</h3>
+              </div>
+              
               <QuantitySelector
                 product={product}
                 selected={selectedPack}
@@ -245,23 +256,30 @@ export default function ProductPage() {
                   setPackData(pack);
                 }}
               />
-            </div>
 
-            {/* Buy Button */}
-            <button
-              onClick={handleBuy}
-              className="w-full bg-black text-white py-4 rounded-2xl font-black text-lg hover:bg-gray-800 transition-all hover:scale-[1.02] shadow-lg shadow-black/20 flex items-center justify-center gap-2"
-            >
-              اطلب الآن — الدفع عند الاستلام
-              <ArrowLeft className="w-5 h-5" />
-            </button>
+              <button
+                onClick={handleBuy}
+                className="w-full mt-6 bg-zinc-900 text-white py-4 rounded-xl font-bold text-lg hover:bg-zinc-800 transition-colors flex items-center justify-center gap-2"
+              >
+                إتمام الطلب
+                <ArrowLeft className="w-5 h-5" />
+              </button>
 
-            {/* Secure Checkout */}
-            <div className="flex flex-col items-center justify-center gap-1.5 mt-4">
-              <p className="flex items-center gap-1.5 text-[11px] font-medium text-gray-500">
-                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                تسوق آمن وموثق 100%
-              </p>
+              <div className="mt-5 pt-5 border-t border-gray-200/60">
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center justify-center gap-6 text-xs font-medium text-gray-600">
+                    <span className="flex items-center gap-1.5">
+                      <Shield className="w-4 h-4 text-gray-400" /> ضمان الجودة
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <Package className="w-4 h-4 text-gray-400" /> الدفع عند الاستلام
+                    </span>
+                  </div>
+                  <p className="text-center text-[11px] text-gray-500">
+                    تسوق آمن ١٠٠٪. لا تدفع أي مبلغ حتى تستلم المنتج وتعاينه بنفسك.
+                  </p>
+                </div>
+              </div>
             </div>
 
             {/* Native Stock Inventory Widget */}
@@ -381,7 +399,7 @@ export default function ProductPage() {
       <FAQ />
 
       {/* Sticky buy bar on mobile */}
-      <StickyBuyBar product={product} onBuy={handleBuy} />
+      <StickyBuyBar product={product} onBuy={scrollToCTA} />
       {/* Spacer for sticky bar */}
       <div className="h-20 md:hidden" />
     </>

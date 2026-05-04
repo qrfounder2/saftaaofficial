@@ -7,19 +7,19 @@ export default function StickyBuyBar({ product, onBuy }) {
     <motion.div
       initial={{ y: 100 }}
       animate={{ y: 0 }}
-      className="fixed bottom-0 inset-x-0 z-50 bg-white/95 backdrop-blur-md border-t border-border shadow-2xl shadow-black/10 p-3 md:hidden"
+      className="fixed bottom-0 inset-x-0 z-50 bg-white/90 backdrop-blur-xl border-t border-slate-200/60 shadow-[0_-10px_40px_rgba(0,0,0,0.08)] p-3 md:hidden pb-safe"
     >
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 max-w-lg mx-auto">
         <div className="flex-1">
-          <p className="text-xs text-muted-foreground line-clamp-1">{product.name}</p>
-          <p className="font-black text-black text-lg">{product.price} ر.س</p>
+          <p className="text-[10px] text-slate-500 font-bold mb-0.5">الإجمالي (شامل الضريبة)</p>
+          <p className="font-black text-slate-900 text-xl leading-none">{product.price} <span className="text-sm font-bold text-slate-500">ر.س</span></p>
         </div>
         <button
           onClick={onBuy}
-          className="flex items-center gap-2 bg-black text-white px-6 py-3 rounded-full font-black text-base hover:bg-gray-800 transition-all shadow-lg shadow-black/20"
+          className="flex items-center justify-center gap-2 bg-slate-900 text-white w-48 py-3.5 rounded-xl font-bold text-sm hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/20 active:scale-95"
         >
           <ShoppingBag className="w-4 h-4" />
-          اطلب الآن
+          إتمام الطلب
         </button>
       </div>
     </motion.div>

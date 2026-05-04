@@ -14,8 +14,8 @@ function WhyUsSection() {
       icon: (
         <Shield className="w-8 h-8 text-black opacity-80" />
       ),
-      title: "أدوية مرخصة ومضمونة",
-      desc: "جميع منتجاتنا مصرحة ومضمونة 100%",
+      title: "منتجات مصرحة وآمنة",
+      desc: "تخضع لأعلى معايير الجودة والسلامة",
       bg: "bg-gray-50",
     },
     {
@@ -30,8 +30,8 @@ function WhyUsSection() {
       icon: (
         <Headset className="w-8 h-8 text-black opacity-80" />
       ),
-      title: "صيدلي متواجد ٢٤/٧",
-      desc: "استشارات صيدلانية مجانية على مدار الساعة",
+      title: "دعم فني مستمر",
+      desc: "فريق سعودي مختص لخدمتك بعد البيع",
       bg: "bg-gray-50",
     },
     {

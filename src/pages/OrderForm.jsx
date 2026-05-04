@@ -287,7 +287,7 @@ export default function OrderForm() {
               <button
                 type="submit"
                 disabled={createOrder.isPending}
-                className="w-full bg-black text-white py-4 rounded-2xl font-black text-lg hover:bg-gray-800 transition-all disabled:opacity-70 flex items-center justify-center gap-2 shadow-lg shadow-black/10"
+                className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-lg hover:bg-slate-800 transition-all disabled:opacity-70 flex items-center justify-center gap-2 shadow-lg shadow-slate-900/20 active:scale-[0.98]"
               >
                 {createOrder.isPending ? (
                   <>
