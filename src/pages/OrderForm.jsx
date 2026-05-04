@@ -245,24 +245,37 @@ export default function OrderForm() {
               </div>
 
               {/* Premium Service Upsell (Native App Style) */}
-              <div 
-                className={`flex items-start gap-3 p-4 mt-2 mb-4 rounded-xl border transition-all cursor-pointer select-none ${formData.addUpsell ? 'border-[#2563eb] bg-[#eff6ff]' : 'border-slate-200 bg-white shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] hover:border-slate-300'}`} 
-                onClick={() => setFormData({...formData, addUpsell: !formData.addUpsell})}
-              >
-                <div className={`mt-0.5 flex shrink-0 items-center justify-center w-5 h-5 rounded border transition-colors ${formData.addUpsell ? 'bg-[#2563eb] border-[#2563eb]' : 'bg-white border-slate-300'}`}>
-                  {formData.addUpsell && <Check className="w-3.5 h-3.5 text-white" />}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-1">
-                    <p className="text-[13px] font-bold text-slate-900 flex items-center gap-1.5">
-                      <Shield className="w-4 h-4 text-[#2563eb]" />
-                      تأمين الشحنة وشحن أولوية
-                    </p>
-                    <span className="text-[12px] font-black text-slate-900">+ ٢٤ ر.س</span>
+              <div className="relative mt-6 mb-4">
+                {!formData.addUpsell && (
+                  <div className="absolute -top-3 right-6 bg-[#2563eb] text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-md animate-bounce flex items-center gap-1.5 z-10">
+                    اضغط للإضافة
+                    <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
                   </div>
-                  <p className="text-[10px] text-slate-500 leading-relaxed pr-5">
-                    تجهيز فوري لطلبك وتغطية تأمينية كاملة ضد التلف أو الفقدان لضمان وصوله بأمان.
-                  </p>
+                )}
+                <div 
+                  className={`flex items-start gap-3 p-4 rounded-xl border transition-all cursor-pointer select-none ${formData.addUpsell ? 'border-[#2563eb] bg-[#eff6ff] shadow-sm' : 'border-slate-200 bg-white shadow-[0_8px_20px_-6px_rgba(37,99,235,0.15)] hover:border-slate-300 ring-1 ring-[#2563eb]/10'}`} 
+                  onClick={() => setFormData({...formData, addUpsell: !formData.addUpsell})}
+                >
+                  <div className="relative mt-0.5 flex shrink-0">
+                    {!formData.addUpsell && (
+                      <span className="absolute -inset-1.5 rounded-full bg-[#2563eb] opacity-20 animate-ping"></span>
+                    )}
+                    <div className={`relative flex items-center justify-center w-5 h-5 rounded border transition-colors ${formData.addUpsell ? 'bg-[#2563eb] border-[#2563eb]' : 'bg-white border-[#2563eb] ring-2 ring-[#2563eb]/20 shadow-sm'}`}>
+                      {formData.addUpsell && <Check className="w-3.5 h-3.5 text-white" />}
+                    </div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="text-[13px] font-bold text-slate-900 flex items-center gap-1.5">
+                        <Shield className="w-4 h-4 text-[#2563eb]" />
+                        تأمين الشحنة وشحن أولوية
+                      </p>
+                      <span className="text-[12px] font-black text-slate-900">+ ٢٤ ر.س</span>
+                    </div>
+                    <p className="text-[10px] text-slate-500 leading-relaxed pr-6">
+                      تجهيز فوري لطلبك وتغطية تأمينية كاملة ضد التلف أو الفقدان لضمان وصوله بأمان.
+                    </p>
+                  </div>
                 </div>
               </div>
 
