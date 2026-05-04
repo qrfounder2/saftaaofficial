@@ -198,13 +198,26 @@ export default function ProductPage() {
 
             <p className="text-xs text-muted-foreground mb-4">شامل الضريبة</p>
 
-            {/* FOMO Live Viewers */}
-            <div className="flex items-center gap-2 mb-6 bg-red-50 border border-red-100 rounded-lg p-2.5 w-fit">
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
-              </span>
-              <p className="text-xs font-bold text-red-700">٤٢ شخص يشاهد هذا المنتج الآن</p>
+            {/* Realistic Popularity Indicator */}
+            <div className="flex items-center gap-3 mb-6 bg-white border border-slate-200 rounded-xl p-2 w-fit shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] hover:shadow-md transition-shadow cursor-default">
+              <div className="flex -space-x-2 -space-x-reverse rtl:space-x-reverse drop-shadow-sm mr-1">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-white flex items-center justify-center text-[11px] font-black text-blue-700 shadow-inner">س</div>
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-50 to-emerald-100 border-2 border-white flex items-center justify-center text-[11px] font-black text-emerald-700 shadow-inner">ن</div>
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-white flex items-center justify-center text-[11px] font-black text-purple-700 shadow-inner">م</div>
+              </div>
+              <div className="flex flex-col ml-2 pr-1">
+                <p className="text-[12px] font-extrabold text-slate-800 flex items-center gap-1">
+                  منتج يكثر الطلب عليه 
+                  <svg className="w-3.5 h-3.5 text-orange-500 drop-shadow-sm" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                </p>
+                <p className="text-[10px] font-medium text-slate-500 mt-0.5 flex items-center gap-1.5">
+                  <span className="relative flex h-1.5 w-1.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+                  </span>
+                  يشاهده ١٤ عميل في الوقت الحالي
+                </p>
+              </div>
             </div>
 
             {/* Short description */}
