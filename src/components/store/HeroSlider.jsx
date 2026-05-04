@@ -11,7 +11,7 @@ const slides = [
     desc: "الخلاص النهائي لخشونة الركبة وعرق النسا. تركيبة طبيعية متطورة لتسكين عميق وفوري بدون أثر دهني.",
     cta: "اطلب المرال الآن",
     badge: "المنتج الأكثر مبيعاً",
-    image: "/images/products/almaral-main-final-v2.png",
+    image: "/images/products/almaral-premium.png",
     gradient: "from-emerald-50/80 to-gray-100",
     features: ["تسكين فوري", "امتصاص سريع"]
   },
@@ -22,7 +22,7 @@ const slides = [
     desc: "جل التبريد العلاجي لاختراق عميق لآلام أسفل الظهر وتشنجات العضلات. راحة تدوم طويلاً.",
     cta: "تخلص من ألم الظهر",
     badge: "تقنية التبريد النشط",
-    image: "/images/products/lumbar-spine-gel.png",
+    image: "/images/products/lumbar-spine-premium.png",
     gradient: "from-blue-50/80 to-slate-100",
     features: ["تبريد علاجي", "يرخي العضلات"]
   },
@@ -33,7 +33,7 @@ const slides = [
     desc: "مرهم متطور بخلاصة ببتيدات سم النحل للقضاء على آلام المفاصل والنقرس. الخيار الأول لكبار السن.",
     cta: "اطلب سم النحل",
     badge: "موصى به لكبار السن",
-    image: "/images/products/bee-venom-cream.png",
+    image: "/images/products/bee-venom-premium.png",
     gradient: "from-amber-50/80 to-orange-50/50",
     features: ["مضاد للالتهاب", "آمن للبشرة"]
   },
@@ -44,7 +44,7 @@ const slides = [
     desc: "تقنية العلاج الانعكاسي ذاتية التسخين. تنشط الدورة الدموية وتخفف آلام الأطراف وترفع الطاقة.",
     cta: "اطلب الجوارب الذكية",
     badge: "تنشيط الدورة الدموية",
-    image: "/images/products/tourmaline-socks.png",
+    image: "/images/products/tourmaline-socks-premium.png",
     gradient: "from-rose-50/80 to-slate-100",
     features: ["ذاتية التسخين", "مساج انعكاسي"]
   }

@@ -7,7 +7,7 @@ export const products = [
     short_description: "تركيبة طبيعية متطورة مدعومة علمياً. راحة حقيقية من آلام الخشونة، عرق النسا، والتهاب الأوتار بفضل مستخلصات الإنزيمات النشطة سريعة الامتصاص.",
     price: 189,
     compare_price: 299,
-    images: ["/images/products/almaral-main-final-v2.png"],
+    images: ["/images/products/almaral-premium.png"],
     category: "medication",
     benefits: [
       "تسكين عميق لآلام خشونة الركبة وعرق النسا بفضل تقنية اختراق الإنزيمات النشطة",
@@ -35,7 +35,7 @@ export const products = [
     short_description: "جل مبرد بتركيبة متطورة لاختراق عميق. يوفر تسكيناً فورياً لآلام أسفل الظهر، تشنجات العضلات، والتهابات العمود الفقري (الديسك).",
     price: 169,
     compare_price: 279,
-    images: ["/images/products/lumbar-spine-gel.png"],
+    images: ["/images/products/lumbar-spine-premium.png"],
     category: "medication",
     benefits: [
       "تسكين فوري وسريع لآلام أسفل الظهر والديسك بفضل تقنية التبريد العلاجي",
@@ -63,7 +63,7 @@ export const products = [
     short_description: "مرهم علاجي متطور بخلاصة سم النحل. يقضي بسرعة على آلام المفاصل، الروماتيزم، والنقرس. خيار مثالي ومجرب لكبار السن والحالات المزمنة.",
     price: 149,
     compare_price: 259,
-    images: ["/images/products/bee-venom-cream.png"],
+    images: ["/images/products/bee-venom-premium.png"],
     category: "medication",
     benefits: [
       "يقضي بسرعة فائقة على آلام المفاصل والعظام المستعصية",
@@ -91,7 +91,7 @@ export const products = [
     short_description: "جوارب علاجية بتقنية التورمالين ذاتية التسخين. تعمل على تنشيط الدورة الدموية، تسكين آلام الأطراف والمفاصل، ورفع مستويات الطاقة اليومية.",
     price: 129,
     compare_price: 199,
-    images: ["/images/products/tourmaline-socks.png"],
+    images: ["/images/products/tourmaline-socks-premium.png"],
     category: "wellness",
     benefits: [
       "تسكين فوري لآلام القدمين والتهاب اللفافة الأخمصية (شوكة الكعب)",
