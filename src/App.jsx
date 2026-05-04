@@ -1,8 +1,8 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
@@ -14,6 +14,8 @@ const Categories = lazy(() => import('./pages/Categories'));
 const ProductPage = lazy(() => import('./pages/ProductPage'));
 const OrderForm = lazy(() => import('./pages/OrderForm'));
 const ThankYou = lazy(() => import('./pages/ThankYou'));
+const AdminLogin = lazy(() => import('./pages/AdminLogin'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 
 const LoadingFallback = () => (
   <div className="fixed inset-0 flex items-center justify-center bg-background">
@@ -23,6 +25,23 @@ const LoadingFallback = () => (
     </div>
   </div>
 );
+
+const PageTracker = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    // Exclude admin routes from tracking
+    if (!location.pathname.startsWith('/mojourney')) {
+      fetch('/api/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ event_type: 'page_view', path: location.pathname })
+      }).catch(err => console.error('Tracking error:', err));
+    }
+  }, [location]);
+
+  return null;
+};
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -57,6 +76,8 @@ const AuthenticatedApp = () => {
         </Route>
         <Route path="/order" element={<OrderForm />} />
         <Route path="/thank-you" element={<ThankYou />} />
+        <Route path="/mojourney" element={<AdminLogin />} />
+        <Route path="/mojourney/dashboard" element={<AdminDashboard />} />
         <Route path="*" element={<PageNotFound />} />
       </Routes>
     </Suspense>
@@ -68,6 +89,7 @@ function App() {
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
         <Router>
+          <PageTracker />
           <AuthenticatedApp />
         </Router>
         <Toaster />

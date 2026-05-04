@@ -2,21 +2,39 @@ import express from "express";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import jwt from "jsonwebtoken";
+import geoip from "geoip-lite";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3001;
 const distDir = path.join(__dirname, "dist");
 const storageDir = path.join(__dirname, "storage");
 const ordersFile = path.join(storageDir, "orders.json");
+const trafficLogsFile = path.join(storageDir, "traffic_logs.json");
+const leadsFile = path.join(storageDir, "leads.json");
+const productsOverrideFile = path.join(storageDir, "products_override.json");
+
+const JWT_SECRET = process.env.JWT_SECRET || "safta_super_secret_jwt_key_2026";
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "admin_safta";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "Mpmp*201";
 
 if (!fs.existsSync(storageDir)) {
   fs.mkdirSync(storageDir, { recursive: true });
 }
 if (!fs.existsSync(ordersFile)) {
   fs.writeFileSync(ordersFile, "[]", "utf8");
+}
+if (!fs.existsSync(trafficLogsFile)) {
+  fs.writeFileSync(trafficLogsFile, "[]", "utf8");
+}
+if (!fs.existsSync(leadsFile)) {
+  fs.writeFileSync(leadsFile, "[]", "utf8");
+}
+if (!fs.existsSync(productsOverrideFile)) {
+  fs.writeFileSync(productsOverrideFile, "{}", "utf8");
 }
 
 const readOrders = () => {
@@ -32,7 +50,242 @@ const writeOrders = (orders) => {
   fs.writeFileSync(ordersFile, JSON.stringify(orders, null, 2), "utf8");
 };
 
+const readTrafficLogs = () => {
+  try {
+    const raw = fs.readFileSync(trafficLogsFile, "utf8");
+    return JSON.parse(raw);
+  } catch {
+    return [];
+  }
+};
+
+const writeTrafficLogs = (logs) => {
+  fs.writeFileSync(trafficLogsFile, JSON.stringify(logs, null, 2), "utf8");
+};
+
+const readLeads = () => {
+  try {
+    return JSON.parse(fs.readFileSync(leadsFile, "utf8"));
+  } catch {
+    return [];
+  }
+};
+
+const writeLeads = (leads) => {
+  fs.writeFileSync(leadsFile, JSON.stringify(leads, null, 2), "utf8");
+};
+
+const readProductOverrides = () => {
+  try {
+    return JSON.parse(fs.readFileSync(productsOverrideFile, "utf8"));
+  } catch {
+    return {};
+  }
+};
+
+const writeProductOverrides = (overrides) => {
+  fs.writeFileSync(productsOverrideFile, JSON.stringify(overrides, null, 2), "utf8");
+};
+
 app.use(express.json({ limit: "1mb" }));
+
+// --- Admin Authentication Middleware ---
+const verifyToken = (req, res, next) => {
+  const token = req.headers["authorization"]?.split(" ")[1];
+  if (!token) return res.status(401).json({ error: "Access Denied: No Token Provided" });
+
+  try {
+    const verified = jwt.verify(token, JWT_SECRET);
+    req.user = verified;
+    next();
+  } catch (err) {
+    res.status(403).json({ error: "Invalid Token" });
+  }
+};
+
+// --- Traffic Filtering & Geo-Fencing Middleware ---
+const ksaTrafficFilter = (req, res, next) => {
+  const ip = req.headers["x-forwarded-for"]?.split(',')[0] || req.socket.remoteAddress;
+  
+  // Use geoip to check if IP is from SA
+  const geo = geoip.lookup(ip);
+  // For local testing (::1 or 127.0.0.1) we might want to bypass or mock, but let's strictly check:
+  const isLocal = ip === '::1' || ip === '127.0.0.1' || ip.startsWith('192.168.');
+  const isKSA = (geo && geo.country === "SA") || isLocal; // Allow local for testing
+  const isVPN = false; // Placeholder for VPN check
+
+  if (isKSA && !isVPN) {
+    req.isValidKsaTraffic = true;
+  } else {
+    req.isValidKsaTraffic = false;
+  }
+  next();
+};
+
+app.post("/api/track", ksaTrafficFilter, (req, res) => {
+  if (req.isValidKsaTraffic) {
+    const logs = readTrafficLogs();
+    logs.push({
+      id: `TRK-${Date.now()}`,
+      ip_address: req.headers["x-forwarded-for"]?.split(',')[0] || req.socket.remoteAddress,
+      user_agent: req.headers["user-agent"],
+      country_code: "SA",
+      is_vpn_proxy: false,
+      event_type: req.body.event_type || "page_view",
+      path: req.body.path || "/",
+      created_at: new Date().toISOString()
+    });
+    writeTrafficLogs(logs);
+    return res.status(200).json({ message: "Tracked" });
+  }
+  return res.status(200).json({ message: "Ignored (Non-KSA or VPN)" });
+});
+
+app.post("/api/leads", (req, res) => {
+  // Capture incomplete orders or abandoned carts
+  const leads = readLeads();
+  const leadData = req.body;
+  const existingIndex = leads.findIndex(l => l.phone === leadData.phone && l.phone);
+  
+  if (existingIndex > -1) {
+    leads[existingIndex] = { ...leads[existingIndex], ...leadData, updated_at: new Date().toISOString() };
+  } else {
+    leads.unshift({
+      id: `LEAD-${Date.now()}`,
+      created_at: new Date().toISOString(),
+      status: "Abandoned Cart",
+      ...leadData
+    });
+  }
+  writeLeads(leads);
+  res.status(200).json({ message: "Lead saved" });
+});
+
+app.get("/api/products/overrides", (req, res) => {
+  res.json(readProductOverrides());
+});
+
+// --- Admin Routes ---
+app.post("/api/admin/login", (req, res) => {
+  const { username, password } = req.body;
+  if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+    const token = jwt.sign({ id: "admin", role: "admin" }, JWT_SECRET, { expiresIn: "1d" });
+    return res.json({ token, message: "Logged in successfully" });
+  }
+  return res.status(401).json({ error: "Invalid credentials" });
+});
+
+app.get("/api/admin/metrics", verifyToken, (req, res) => {
+  const orders = readOrders();
+  const logs = readTrafficLogs();
+  const leads = readLeads();
+  
+  const totalRevenue = orders.reduce((sum, order) => {
+    // Only count if status is not RTO or pending
+    if (order.status !== 'RTO') {
+        return sum + (Number(order.total_price) || 0);
+    }
+    return sum;
+  }, 0);
+
+  const clicks = logs.filter(l => l.event_type === 'click' || l.event_type === 'page_view').length;
+  const uniqueVisitors = new Set(logs.map(l => l.ip_address)).size;
+  const totalOrders = orders.length;
+  const conversionRate = uniqueVisitors > 0 ? ((totalOrders / uniqueVisitors) * 100).toFixed(1) : 0;
+  
+  // Paths tracking
+  const pathCounts = logs.reduce((acc, log) => {
+    if (log.path) {
+      acc[log.path] = (acc[log.path] || 0) + 1;
+    }
+    return acc;
+  }, {});
+
+  res.json({
+    clicks,
+    uniqueVisitors,
+    totalOrders,
+    conversionRate,
+    totalRevenue,
+    leadsCount: leads.length,
+    pathCounts
+  });
+});
+
+app.get("/api/admin/leads", verifyToken, (req, res) => {
+  res.json({ leads: readLeads() });
+});
+
+app.put("/api/admin/leads/:id/status", verifyToken, (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+  const leads = readLeads();
+  const leadIndex = leads.findIndex(l => l.id === id);
+  if (leadIndex > -1) {
+    leads[leadIndex].status = status;
+    writeLeads(leads);
+    res.json({ message: "Status updated", lead: leads[leadIndex] });
+  } else {
+    res.status(404).json({ error: "Lead not found" });
+  }
+});
+
+app.put("/api/admin/products/:productId", verifyToken, (req, res) => {
+  const { productId } = req.params;
+  const updates = req.body; // e.g. { price: 150, is_active: false }
+  
+  const overrides = readProductOverrides();
+  overrides[productId] = { ...(overrides[productId] || {}), ...updates };
+  writeProductOverrides(overrides);
+  
+  res.json({ message: "Product updated", overrides: overrides[productId] });
+});
+
+app.get("/api/admin/orders", verifyToken, (req, res) => {
+  const orders = readOrders();
+  res.json({ orders });
+});
+
+app.put("/api/admin/orders/:id/status", verifyToken, async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+  const orders = readOrders();
+  const orderIndex = orders.findIndex(o => o.id === id);
+  
+  if (orderIndex === -1) {
+    return res.status(404).json({ error: "Order not found" });
+  }
+
+  orders[orderIndex].status = status;
+  writeOrders(orders);
+
+  if (status === "Confirmed") {
+    // Logic to push to Codnetwork
+    console.log(`Mocking push to Codnetwork for order ${id}...`);
+    orders[orderIndex].codnetwork_reference_id = `CODNET-${Date.now()}`;
+    orders[orderIndex].status = "Dispatched_To_Codnetwork";
+    writeOrders(orders);
+  }
+
+  res.json({ message: "Order status updated successfully", order: orders[orderIndex] });
+});
+
+app.post("/api/admin/orders/:id/push", verifyToken, (req, res) => {
+  const { id } = req.params;
+  const orders = readOrders();
+  const orderIndex = orders.findIndex(o => o.id === id);
+  
+  if (orderIndex === -1) {
+    return res.status(404).json({ error: "Order not found" });
+  }
+
+  console.log(`Manual push to Codnetwork for order ${id}...`);
+  orders[orderIndex].codnetwork_reference_id = `CODNET-${Date.now()}`;
+  orders[orderIndex].status = "Dispatched_To_Codnetwork";
+  writeOrders(orders);
+
+  res.json({ message: "Successfully pushed to Codnetwork", order: orders[orderIndex] });
+});
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", service: "saftaa-care-hub" });
 });
