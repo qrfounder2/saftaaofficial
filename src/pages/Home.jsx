@@ -81,44 +81,37 @@ function WhyUsSection() {
 
 function UrgencyBanner() {
   return (
-    <section className="py-8 bg-gray-50 border-y border-gray-200">
+    <section className="py-8 bg-slate-50 border-y border-slate-200/60">
       <div className="max-w-4xl mx-auto px-4 text-center">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
-          className="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm relative overflow-hidden"
+          className="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)] relative overflow-hidden"
         >
-          {/* Animated Progress Bar */}
-          <div className="absolute top-0 left-0 w-full h-1 bg-gray-100">
-            <motion.div 
-              initial={{ width: "100%" }}
-              whileInView={{ width: "15%" }}
-              viewport={{ once: true }}
-              transition={{ duration: 2, ease: "easeOut", delay: 0.5 }}
-              className="h-full bg-black"
-            />
-          </div>
+          {/* Subtle Accent Line */}
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-emerald-500/40 to-transparent"></div>
           
-          <div className="flex items-center justify-center gap-2 mb-3 mt-2">
-            <div className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+          <div className="flex items-center justify-center gap-2 mb-4 mt-1">
+            <div className="bg-orange-50 border border-orange-100 rounded-md px-2.5 py-1 flex items-center gap-1.5">
+              <svg className="w-3.5 h-3.5 text-orange-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 2.5z"></path>
+              </svg>
+              <span className="text-[11px] font-bold text-orange-700 tracking-wide">المنتج الأكثر طلباً لهذا الأسبوع</span>
             </div>
-            <span className="text-xs font-bold text-gray-900 tracking-wide">طلب عالي الآن</span>
           </div>
 
-          <h3 className="text-xl md:text-2xl font-black text-black mb-2">
+          <h3 className="text-xl md:text-2xl font-black text-slate-800 mb-3">
             عرض خاص لفترة محدودة — خصم حصري يصل إلى ٤٠٪
           </h3>
-          <p className="text-sm text-gray-500 mb-6">
-            الكمية محدودة جداً — متبقي ١٥٪ فقط من الكمية المخصصة للعرض
+          <p className="text-sm text-slate-500 mb-6 font-medium">
+            يتم توفير الكميات بشكل دوري من المستودع المركزي. اطلب الآن لضمان السعر الحالي.
           </p>
           <Link
             to="/categories"
-            className="inline-block bg-black text-white px-8 py-3.5 rounded-full font-black text-base hover:bg-gray-800 transition-all hover:scale-105 shadow-lg shadow-black/10"
+            className="inline-block bg-slate-900 text-white px-8 py-3.5 rounded-xl font-bold text-sm hover:bg-slate-800 transition-all shadow-md hover:shadow-lg"
           >
-            استفد من العرض الآن
+            تصفح المنتجات المتاحة
           </Link>
         </motion.div>
       </div>
