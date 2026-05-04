@@ -65,8 +65,8 @@ app.post("/api/orders", async (req, res) => {
   let finalNotes = order.notes || "";
   
   if (order.has_upsell) {
-    finalProductName += " + زيت التدليك العضوي (Upsell)";
-    finalSku += " + UPSELL-OIL-01";
+    finalProductName += " + شحن أولوية سريع وتأمين شامل (Premium Service)";
+    finalSku += " + UPSELL-PRIORITY-SHIP";
   }
 
   const stored = {

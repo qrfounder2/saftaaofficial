@@ -44,7 +44,7 @@ export default function OrderForm() {
   });
 
   const basePrice = priceParam ? Number(priceParam) : product?.price || 0;
-  const totalPrice = basePrice + (formData.addUpsell ? 49 : 0);
+  const totalPrice = basePrice + (formData.addUpsell ? 24 : 0);
   const packLabel = pack === "5" ? "٥ عبوات" : pack === "3" ? "٣ عبوات" : "عبوة واحدة";
 
   const createOrder = useMutation({
@@ -244,30 +244,31 @@ export default function OrderForm() {
                 </div>
               </div>
 
-              {/* Cross-sell / Upsell */}
-              <div className="bg-emerald-50/50 border border-emerald-200 rounded-xl p-4 mt-2 mb-4 relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-1 h-full bg-emerald-500"></div>
-                <div className="absolute -left-6 -top-6 w-20 h-20 bg-emerald-500/10 rounded-full blur-xl group-hover:scale-150 transition-transform"></div>
+              {/* Premium Service Upsell */}
+              <div className="bg-amber-50/50 border border-amber-200 rounded-xl p-4 mt-2 mb-4 relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-1 h-full bg-amber-500"></div>
+                <div className="absolute -left-6 -top-6 w-20 h-20 bg-amber-500/10 rounded-full blur-xl group-hover:scale-150 transition-transform"></div>
                 
                 <div className="flex items-start gap-3 relative z-10">
-                  <div className="w-16 h-16 rounded-xl bg-white border border-emerald-100 flex-shrink-0 overflow-hidden p-1 shadow-sm">
-                    {/* Placeholder image for cross-sell (e.g. pain relief oil) */}
-                    <img src="/images/categories/cat-joints.webp" alt="زيت التدليك" className="w-full h-full object-cover rounded-lg" />
+                  <div className="w-12 h-12 rounded-full bg-white border border-amber-100 flex items-center justify-center flex-shrink-0 shadow-sm text-amber-600">
+                    <Shield className="w-6 h-6" />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-1.5 mb-1">
-                      <span className="bg-emerald-100 text-emerald-700 text-[9px] font-black px-1.5 py-0.5 rounded-sm">عرض حصري</span>
+                      <span className="bg-amber-100 text-amber-800 text-[9px] font-black px-1.5 py-0.5 rounded-sm">خدمة مميزة</span>
                     </div>
-                    <p className="text-sm font-bold text-slate-800 leading-tight">زيت التدليك العضوي السريع (Upsell)</p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-sm font-black text-emerald-700">+ ٤٩ ر.س</span>
-                      <span className="text-[10px] text-slate-400 line-through">٩٩ ر.س</span>
+                    <p className="text-sm font-bold text-slate-800 leading-tight">شحن أولوية سريع + تأمين شامل</p>
+                    <p className="text-[10px] text-slate-500 mt-1 leading-relaxed">
+                      تجهيز فوري لطلبك في المستودع مع تغطية تأمينية كاملة ضد التلف أو الفقدان.
+                    </p>
+                    <div className="flex items-center gap-2 mt-1.5">
+                      <span className="text-sm font-black text-amber-700">+ ٢٤ ر.س</span>
                     </div>
                   </div>
                 </div>
                 
-                <label className="flex items-center gap-2.5 mt-3 pt-3 border-t border-emerald-100 cursor-pointer relative z-10">
-                  <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${formData.addUpsell ? 'bg-emerald-500 border-emerald-500' : 'bg-white border-slate-300'}`}>
+                <label className="flex items-center gap-2.5 mt-3 pt-3 border-t border-amber-100 cursor-pointer relative z-10">
+                  <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${formData.addUpsell ? 'bg-amber-500 border-amber-500' : 'bg-white border-slate-300'}`}>
                     {formData.addUpsell && <Check className="w-3.5 h-3.5 text-white" />}
                   </div>
                   <input 
@@ -276,7 +277,7 @@ export default function OrderForm() {
                     checked={formData.addUpsell || false}
                     onChange={(e) => setFormData({...formData, addUpsell: e.target.checked})}
                   />
-                  <span className="text-[12px] font-bold text-slate-700">نعم، أضف هذا المنتج لطلبي</span>
+                  <span className="text-[12px] font-bold text-slate-700">نعم، أريد حماية وتأمين شحنتي</span>
                 </label>
               </div>
 
