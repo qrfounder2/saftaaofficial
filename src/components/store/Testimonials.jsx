@@ -1,15 +1,14 @@
 import React from "react";
 import { motion } from "framer-motion";
 
-// Realistic Arabic reviews representing diverse Middle Eastern/Saudi demographics
+// Realistic Unsplash portraits representing diverse Middle Eastern/Saudi demographics
 export const homepageReviews = [
   {
     name: "أبو عبدالله",
     city: "الرياض",
     text: "والله ما صدّقت! كنت أعاني من خشونة الركبة ٥ سنوات، وبعد أسبوع واحد فقط حسيت بفرق كبير. المنتج فادني بشكل ملحوظ.",
     rating: 5,
-    initial: "أ",
-    color: "bg-blue-50 text-blue-700 border-blue-100",
+    avatar: "/images/reviews/saudi-man-1.webp",
     platform: "google",
     date: "منذ ٣ أسابيع",
   },
@@ -18,8 +17,7 @@ export const homepageReviews = [
     city: "جدة",
     text: "أمي عمرها ٦٥ سنة وتعاني من عرق النسا، طلبنا المنتج وبعد ١٠ أيام صارت تمشي بدون ألم. شكراً لكم.",
     rating: 5,
-    initial: "أ",
-    color: "bg-rose-50 text-rose-700 border-rose-100",
+    avatar: "/images/reviews/saudi-woman-1.webp",
     platform: "google",
     date: "منذ شهر",
   },
@@ -28,8 +26,7 @@ export const homepageReviews = [
     city: "الدمام",
     text: "أنا رياضي وكنت أعاني من آلام الظهر بعد التمارين. هالكريم صار رفيقي الدائم، نتائج سريعة وطبيعي ١٠٠٪",
     rating: 5,
-    initial: "ف",
-    color: "bg-emerald-50 text-emerald-700 border-emerald-100",
+    avatar: "/images/reviews/saudi-man-2.webp",
     platform: "snapchat",
     date: "منذ ٢ أسبوعين",
   },
@@ -38,8 +35,7 @@ export const homepageReviews = [
     city: "بريدة",
     text: "طلبت ٣ عبوات وكانت أحسن قرار! وزّعتها على أهلي وكلهم شاكرين. المنتج ممتاز والتوصيل سريع جداً.",
     rating: 5,
-    initial: "ن",
-    color: "bg-purple-50 text-purple-700 border-purple-100",
+    avatar: "/images/reviews/saudi-woman-2.webp",
     platform: "tiktok",
     date: "منذ ٥ أيام",
   },
@@ -51,8 +47,7 @@ export const productReviews = [
     city: "حائل",
     text: "استخدمته لآلام المفاصل اللي كانت تمنعني من النوم، وبصراحة النتيجة مبهرة من أول ثلاث أيام.",
     rating: 5,
-    initial: "س",
-    color: "bg-blue-50 text-blue-700 border-blue-100",
+    avatar: "/images/reviews/saudi-man-3.webp",
     platform: "google",
     date: "منذ يومين",
   },
@@ -61,8 +56,7 @@ export const productReviews = [
     city: "الرياض",
     text: "المنتج ريحته مقبولة وامتصاصه سريع، استخدمته لرقبتي بسبب الجلوس الطويل على المكتب وفعلاً فرق معي.",
     rating: 5,
-    initial: "س",
-    color: "bg-rose-50 text-rose-700 border-rose-100",
+    avatar: "/images/reviews/saudi-woman-3.webp",
     platform: "snapchat",
     date: "منذ أسبوع",
   },
@@ -71,8 +65,7 @@ export const productReviews = [
     city: "القصيم",
     text: "ممتاز جداً للوالد، كان يشتكي من خشونة الركبة والآن وضعه أفضل بكثير ولله الحمد.",
     rating: 5,
-    initial: "أ",
-    color: "bg-amber-50 text-amber-700 border-amber-100",
+    avatar: "/images/reviews/saudi-man-4.webp",
     platform: "tiktok",
     date: "منذ ٣ أسابيع",
   },
@@ -81,8 +74,7 @@ export const productReviews = [
     city: "أبها",
     text: "توصيل سريع وتغليف ممتاز. المنتج يستاهل كل ريال تدفعه فيه، فعال جداً لآلام أسفل الظهر.",
     rating: 5,
-    initial: "ع",
-    color: "bg-emerald-50 text-emerald-700 border-emerald-100",
+    avatar: "/images/reviews/saudi-man-5.webp",
     platform: "google",
     date: "منذ شهر",
   },
@@ -200,17 +192,19 @@ export default function Testimonials({ type = "home" }) {
               <p className="text-sm leading-relaxed text-foreground/80 flex-1 mb-4">{review.text}</p>
 
               {/* Bottom: avatar + name */}
-              <div className="flex items-center gap-2.5 pt-3 border-t border-slate-100 mt-auto">
-                <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-black border shadow-inner ${review.color}`}>
-                  {review.initial}
-                </div>
+              <div className="flex items-center gap-2.5 pt-3 border-t border-border/30">
+                <img
+                  src={review.avatar}
+                  alt={review.name}
+                  className="w-10 h-10 rounded-full object-cover bg-muted border border-border/40"
+                />
                 <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-bold text-slate-800 truncate">{review.name}</p>
-                  <p className="text-[10px] text-slate-500 font-medium">{review.city} · {review.date}</p>
+                  <p className="text-xs font-bold truncate">{review.name}</p>
+                  <p className="text-[10px] text-muted-foreground">{review.city} · {review.date}</p>
                 </div>
-                <div className="flex items-center gap-0.5 text-[10px] text-emerald-600 font-bold bg-emerald-50 border border-emerald-100 px-1.5 py-0.5 rounded-md shrink-0">
+                <div className="flex items-center gap-0.5 text-[10px] text-emerald-600 font-medium bg-emerald-50 px-1.5 py-0.5 rounded-full shrink-0">
                   <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                  مشتري موثّق
+                  موثّق
                 </div>
               </div>
             </motion.div>
