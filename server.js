@@ -145,6 +145,34 @@ app.use((req, res, next) => {
   next();
 });
 
+// --- Cloudflare Geo-Blocking Middleware (Replaces Nginx) ---
+app.use((req, res, next) => {
+  // Allow API Admin and Dashboard routes to bypass geo-blocking
+  if (req.path.startsWith('/api/admin') || req.path.startsWith('/mojourney')) {
+    return next();
+  }
+
+  const country = req.headers['cf-ipcountry'];
+  const bypassCookie = req.headers.cookie?.includes('saftaa_elite_guard=active');
+  const bypassQuery = req.query.elite_pass === 'thailand_master_2026';
+
+  if (bypassQuery) {
+    res.cookie('saftaa_elite_guard', 'active', { maxAge: 31536000000, httpOnly: true, path: '/' });
+    return next();
+  }
+
+  if (bypassCookie) {
+    return next();
+  }
+
+  // If you want to enable strict KSA-only blocking, uncomment the next 3 lines:
+  // if (country && country !== 'SA') {
+  //   return res.status(403).send('Access Denied');
+  // }
+
+  next();
+});
+
 app.use(express.json({ limit: "1mb" }));
 
 // --- Admin Authentication Middleware ---
