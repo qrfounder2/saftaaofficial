@@ -3,7 +3,14 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import jwt from "jsonwebtoken";
-import geoip from "geoip-lite";
+
+let geoip;
+try {
+  geoip = await import("geoip-lite");
+  geoip = geoip.default || geoip;
+} catch {
+  geoip = { lookup: () => null };
+}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -543,4 +550,12 @@ if (fs.existsSync(distDir)) {
 
 app.listen(port, () => {
   console.log(`Saftaa self-hosted server running on :${port}`);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+});
+
+process.on('unhandledRejection', (err) => {
+  console.error('Unhandled Rejection:', err);
 });
