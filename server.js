@@ -20,7 +20,7 @@ const redirectsFile = path.join(storageDir, "redirects.json");
 const settingsFile = path.join(storageDir, "settings.json");
 
 const JWT_SECRET = process.env.JWT_SECRET || "safta_super_secret_jwt_key_2026";
-const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "admin_safta";
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "admin";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "Mpmp*201";
 
 if (!fs.existsSync(storageDir)) {
