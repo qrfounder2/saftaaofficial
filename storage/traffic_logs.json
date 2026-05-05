@@ -124,5 +124,65 @@
     "is_vpn_proxy": false,
     "event_type": "page_view",
     "created_at": "2026-05-04T18:02:16.749Z"
+  },
+  {
+    "id": "TRK-1777918237379",
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Cursor/3.2.11 Chrome/142.0.7444.265 Electron/39.8.1 Safari/537.36",
+    "country_code": "SA",
+    "is_vpn_proxy": false,
+    "event_type": "page_view",
+    "path": "/",
+    "created_at": "2026-05-04T18:10:37.379Z"
+  },
+  {
+    "id": "TRK-1777918424505",
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Cursor/3.2.11 Chrome/142.0.7444.265 Electron/39.8.1 Safari/537.36",
+    "country_code": "SA",
+    "is_vpn_proxy": false,
+    "event_type": "page_view",
+    "path": "/",
+    "created_at": "2026-05-04T18:13:44.505Z"
+  },
+  {
+    "id": "TRK-1777920388501",
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Cursor/3.2.11 Chrome/142.0.7444.265 Electron/39.8.1 Safari/537.36",
+    "country_code": "SA",
+    "is_vpn_proxy": false,
+    "event_type": "page_view",
+    "path": "/categories",
+    "created_at": "2026-05-04T18:46:28.501Z"
+  },
+  {
+    "id": "TRK-1777920389993",
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Cursor/3.2.11 Chrome/142.0.7444.265 Electron/39.8.1 Safari/537.36",
+    "country_code": "SA",
+    "is_vpn_proxy": false,
+    "event_type": "page_view",
+    "path": "/product/HIMRJP10",
+    "created_at": "2026-05-04T18:46:29.993Z"
+  },
+  {
+    "id": "TRK-1778003297545",
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Cursor/3.2.11 Chrome/142.0.7444.265 Electron/39.8.1 Safari/537.36",
+    "country_code": "SA",
+    "is_vpn_proxy": false,
+    "event_type": "page_view",
+    "path": "/",
+    "created_at": "2026-05-05T17:48:17.545Z"
+  },
+  {
+    "id": "TRK-1778003308329",
+    "ip_address": "::1",
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Cursor/3.2.11 Chrome/142.0.7444.265 Electron/39.8.1 Safari/537.36",
+    "country_code": "SA",
+    "is_vpn_proxy": false,
+    "event_type": "page_view",
+    "path": "/product/HIMRJP10",
+    "created_at": "2026-05-05T17:48:28.329Z"
   }
 ]

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
-import { LayoutDashboard, ShoppingCart, Settings, X, Truck, LogOut, Package, Activity, Users, FileText, ToggleLeft, ToggleRight, Edit2, Save } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, Settings, X, Truck, LogOut, Package, Activity, Users, FileText, ToggleLeft, ToggleRight, Edit2, Save, Link as LinkIcon, Trash2, Download } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { products as initialProducts } from '@/data/products';
 
@@ -51,7 +51,12 @@ export default function AdminDashboard() {
   const [orders, setOrders] = useState([]);
   const [leads, setLeads] = useState([]);
   const [products, setProducts] = useState([]);
+  const [redirects, setRedirects] = useState([]);
+  const [storeSettings, setStoreSettings] = useState({ googleSheetsUrl: '', codnetworkApiKey: '', maintenanceMode: false });
   const [editingProduct, setEditingProduct] = useState(null);
+  
+  // Redirect form state
+  const [newRedirect, setNewRedirect] = useState({ from: '', to: '' });
 
   const [metrics, setMetrics] = useState({ clicks: 0, uniqueVisitors: 0, totalOrders: 0, conversionRate: 0, totalRevenue: 0, leadsCount: 0, pathCounts: {} });
   const [loading, setLoading] = useState(true);
@@ -67,11 +72,13 @@ export default function AdminDashboard() {
     }
 
     try {
-      const [ordersRes, metricsRes, leadsRes, productsOverridesRes] = await Promise.all([
+      const [ordersRes, metricsRes, leadsRes, productsOverridesRes, redirectsRes, settingsRes] = await Promise.all([
         fetch('/api/admin/orders', { headers: { 'Authorization': `Bearer ${token}` } }),
         fetch('/api/admin/metrics', { headers: { 'Authorization': `Bearer ${token}` } }),
         fetch('/api/admin/leads', { headers: { 'Authorization': `Bearer ${token}` } }),
-        fetch('/api/products/overrides', { headers: { 'Authorization': `Bearer ${token}` } })
+        fetch('/api/products/overrides', { headers: { 'Authorization': `Bearer ${token}` } }),
+        fetch('/api/admin/redirects', { headers: { 'Authorization': `Bearer ${token}` } }),
+        fetch('/api/admin/settings', { headers: { 'Authorization': `Bearer ${token}` } })
       ]);
 
       if (ordersRes.status === 401 || ordersRes.status === 403) {
@@ -84,10 +91,14 @@ export default function AdminDashboard() {
       const metricsData = await metricsRes.json();
       const leadsData = await leadsRes.json();
       const overridesData = await productsOverridesRes.json();
+      const redirectsData = await redirectsRes.json();
+      const settingsData = await settingsRes.json();
 
       setOrders(ordersData.orders || []);
       setMetrics(metricsData || { clicks: 0, uniqueVisitors: 0, totalOrders: 0, conversionRate: 0, totalRevenue: 0, leadsCount: 0, pathCounts: {} });
       setLeads(leadsData.leads || []);
+      setRedirects(redirectsData || []);
+      setStoreSettings(settingsData || { googleSheetsUrl: '', codnetworkApiKey: '', maintenanceMode: false });
 
       // Merge initial products with backend overrides
       const mergedProducts = initialProducts.map(p => ({
@@ -174,6 +185,102 @@ export default function AdminDashboard() {
     saveProductUpdate(product.id, { is_active: !product.is_active });
   };
 
+  const handleAddRedirect = async (e) => {
+    e.preventDefault();
+    if (!newRedirect.from || !newRedirect.to) return;
+    
+    const token = localStorage.getItem('adminToken');
+    try {
+      const res = await fetch(`/api/admin/redirects`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(newRedirect)
+      });
+      if (res.ok) {
+        toast({ title: "تم الإضافة", description: "تم إنشاء رابط التحويل بنجاح" });
+        setNewRedirect({ from: '', to: '' });
+        fetchDashboardData();
+      }
+    } catch (e) {
+      toast({ title: "خطأ", description: "فشل إنشاء رابط التحويل", variant: "destructive" });
+    }
+  };
+
+  const handleDeleteRedirect = async (id) => {
+    if (!confirm("هل أنت متأكد من حذف رابط التحويل هذا؟")) return;
+    
+    const token = localStorage.getItem('adminToken');
+    try {
+      const res = await fetch(`/api/admin/redirects/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        toast({ title: "تم الحذف", description: "تم حذف رابط التحويل بنجاح" });
+        fetchDashboardData();
+      }
+    } catch (e) {
+      toast({ title: "خطأ", description: "فشل الحذف", variant: "destructive" });
+    }
+  };
+
+  const handleToggleRedirect = async (id, currentStatus) => {
+    const token = localStorage.getItem('adminToken');
+    try {
+      const res = await fetch(`/api/admin/redirects/${id}/status`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ active: !currentStatus })
+      });
+      if (res.ok) {
+        fetchDashboardData();
+      }
+    } catch (e) {
+      toast({ title: "خطأ", description: "فشل تحديث الحالة", variant: "destructive" });
+    }
+  };
+
+  const handleUpdateSetting = async (key, value) => {
+    const token = localStorage.getItem('adminToken');
+    try {
+      const res = await fetch(`/api/admin/settings`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ [key]: value })
+      });
+      if (res.ok) {
+        toast({ title: "تم الحفظ", description: "تم تحديث الإعدادات بنجاح" });
+        fetchDashboardData();
+      }
+    } catch (e) {
+      toast({ title: "خطأ", description: "فشل تحديث الإعدادات", variant: "destructive" });
+    }
+  };
+
+  const exportToCSV = (data, filename) => {
+    if (!data || !data.length) return;
+    const headers = Object.keys(data[0]);
+    const csvRows = [];
+    csvRows.push(headers.join(','));
+
+    for (const row of data) {
+      const values = headers.map(header => {
+        const escaped = ('' + (row[header] || '')).replace(/"/g, '""');
+        return `"${escaped}"`;
+      });
+      csvRows.push(values.join(','));
+    }
+
+    const csvContent = "data:text/csv;charset=utf-8,\uFEFF" + csvRows.join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `${filename}_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   if (loading) {
     return <div className="flex h-screen items-center justify-center bg-gray-50">جاري التحميل...</div>;
   }
@@ -206,6 +313,9 @@ export default function AdminDashboard() {
                 </button>
                 <button onClick={() => setActiveTab('settings')} className={`w-full flex items-center px-4 py-2.5 rounded-md transition-colors ${activeTab === 'settings' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-600 hover:bg-gray-100 font-medium'}`}>
                     <Settings className="w-5 h-5 mr-3" /> Store Settings
+                </button>
+                <button onClick={() => setActiveTab('redirects')} className={`w-full flex items-center px-4 py-2.5 rounded-md transition-colors ${activeTab === 'redirects' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-600 hover:bg-gray-100 font-medium'}`}>
+                    <LinkIcon className="w-5 h-5 mr-3" /> URL Redirects
                 </button>
             </nav>
             <div className="p-4 border-t border-gray-200">
@@ -387,7 +497,9 @@ export default function AdminDashboard() {
                     <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden max-w-7xl mx-auto">
                         <div className="p-6 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
                           <h2 className="text-lg font-bold text-gray-800">Abandoned Carts & Incomplete Orders</h2>
-                          <button className="text-sm bg-white border border-gray-300 px-4 py-2 rounded-md font-medium text-gray-700 hover:bg-gray-50 shadow-sm">Export to CSV</button>
+                          <button onClick={() => exportToCSV(leads, 'leads')} className="text-sm bg-white border border-gray-300 px-4 py-2 rounded-md font-medium text-gray-700 hover:bg-gray-50 shadow-sm flex items-center gap-2">
+                            <Download className="w-4 h-4" /> Export to CSV
+                          </button>
                         </div>
                         <table className="w-full text-left text-sm whitespace-nowrap">
                             <thead className="bg-white border-b border-gray-200 text-gray-500">
@@ -429,6 +541,11 @@ export default function AdminDashboard() {
                 {/* 5. ORDERS TABLE */}
                 {activeTab === 'orders' && (
                     <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden max-w-7xl mx-auto">
+                        <div className="p-4 border-b border-gray-200 flex justify-end bg-gray-50">
+                          <button onClick={() => exportToCSV(orders, 'orders')} className="text-sm bg-white border border-gray-300 px-4 py-2 rounded-md font-medium text-gray-700 hover:bg-gray-50 shadow-sm flex items-center gap-2">
+                            <Download className="w-4 h-4" /> Export to CSV
+                          </button>
+                        </div>
                         <table className="w-full text-left text-sm whitespace-nowrap">
                             <thead className="bg-gray-50 border-b border-gray-200 text-gray-600">
                                 <tr>
@@ -477,13 +594,36 @@ export default function AdminDashboard() {
                       <div className="space-y-6">
                         <div>
                           <label className="block text-sm font-semibold text-gray-700 mb-2">Google Sheets Webhook URL</label>
-                          <input type="text" className="w-full border border-gray-300 rounded-md px-4 py-2 text-sm bg-gray-50" defaultValue="https://script.google.com/macros/s/AKfycbxLqHmgRgooygm6IxHk4pNL7srNV5NABQZpoSwKD4HWlhz5kWMr46m9BTTKWuhoyRl5yA/exec" disabled />
-                          <p className="text-xs text-gray-500 mt-1">Updates to Google Sheets are managed directly from the backend `.env` file for security.</p>
+                          <div className="flex gap-2">
+                            <input 
+                              type="text" 
+                              className="flex-1 border border-gray-300 rounded-md px-4 py-2 text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none" 
+                              value={storeSettings.googleSheetsUrl} 
+                              onChange={(e) => setStoreSettings({...storeSettings, googleSheetsUrl: e.target.value})}
+                            />
+                            <button 
+                              onClick={() => handleUpdateSetting('googleSheetsUrl', storeSettings.googleSheetsUrl)}
+                              className="px-4 py-2 bg-emerald-600 text-white rounded-md text-sm font-bold hover:bg-emerald-700"
+                            >Save</button>
+                          </div>
+                          <p className="text-xs text-gray-500 mt-1">Updates to Google Sheets are managed directly from the backend.</p>
                         </div>
 
                         <div>
                           <label className="block text-sm font-semibold text-gray-700 mb-2">Codnetwork API Key</label>
-                          <input type="password" className="w-full border border-gray-300 rounded-md px-4 py-2 text-sm bg-gray-50" defaultValue="••••••••••••••••" disabled />
+                          <div className="flex gap-2">
+                            <input 
+                              type="password" 
+                              className="flex-1 border border-gray-300 rounded-md px-4 py-2 text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none" 
+                              value={storeSettings.codnetworkApiKey} 
+                              onChange={(e) => setStoreSettings({...storeSettings, codnetworkApiKey: e.target.value})}
+                              placeholder="••••••••••••••••" 
+                            />
+                            <button 
+                              onClick={() => handleUpdateSetting('codnetworkApiKey', storeSettings.codnetworkApiKey)}
+                              className="px-4 py-2 bg-emerald-600 text-white rounded-md text-sm font-bold hover:bg-emerald-700"
+                            >Save</button>
+                          </div>
                         </div>
 
                         <div className="pt-6 border-t border-gray-100 flex items-center justify-between">
@@ -491,7 +631,96 @@ export default function AdminDashboard() {
                             <h4 className="font-bold text-gray-900 text-sm">Store Status</h4>
                             <p className="text-xs text-gray-500">Temporarily disable storefront (Maintenance Mode)</p>
                           </div>
-                          <ToggleRight className="w-10 h-10 text-emerald-500" />
+                          <button onClick={() => {
+                            const newStatus = !storeSettings.maintenanceMode;
+                            setStoreSettings({...storeSettings, maintenanceMode: newStatus});
+                            handleUpdateSetting('maintenanceMode', newStatus);
+                          }} className={`p-1 rounded-full transition-colors ${storeSettings.maintenanceMode ? 'text-red-500' : 'text-emerald-500'}`}>
+                            {storeSettings.maintenanceMode ? <ToggleRight className="w-10 h-10" /> : <ToggleLeft className="w-10 h-10 text-gray-400" />}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                )}
+
+                {/* 7. URL REDIRECTS */}
+                {activeTab === 'redirects' && (
+                    <div className="max-w-4xl mx-auto space-y-6">
+                      <div className="bg-white p-8 rounded-xl border border-gray-200 shadow-sm">
+                        <div className="mb-6">
+                          <h2 className="text-xl font-bold text-gray-800">URL Redirects</h2>
+                          <p className="text-sm text-gray-500 mt-1">Redirect visitors from old links to new pages instantly. Useful for marketing campaigns or out-of-stock items.</p>
+                        </div>
+
+                        <form onSubmit={handleAddRedirect} className="bg-gray-50 p-6 rounded-lg border border-gray-200 mb-8 space-y-4">
+                          <h3 className="text-sm font-bold text-gray-700">Create URL Redirect</h3>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-xs font-semibold text-gray-600 mb-1">Redirect from</label>
+                              <input 
+                                type="text" 
+                                placeholder="e.g., /shop/shoes" 
+                                value={newRedirect.from}
+                                onChange={(e) => setNewRedirect({...newRedirect, from: e.target.value})}
+                                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-semibold text-gray-600 mb-1">Redirect to</label>
+                              <input 
+                                type="text" 
+                                placeholder="https://..." 
+                                value={newRedirect.to}
+                                onChange={(e) => setNewRedirect({...newRedirect, to: e.target.value})}
+                                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                              />
+                            </div>
+                          </div>
+                          <div className="flex justify-end">
+                            <button 
+                              type="submit" 
+                              disabled={!newRedirect.from || !newRedirect.to}
+                              className="px-4 py-2 bg-emerald-600 text-white rounded-md text-sm font-bold hover:bg-emerald-700 disabled:opacity-50 shadow-sm"
+                            >
+                              Save Redirect
+                            </button>
+                          </div>
+                        </form>
+
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-left text-sm">
+                            <thead className="border-b border-gray-200 text-gray-500">
+                              <tr>
+                                <th className="px-4 py-3 font-semibold">Redirect from</th>
+                                <th className="px-4 py-3 font-semibold">Redirect to</th>
+                                <th className="px-4 py-3 font-semibold text-center">Status</th>
+                                <th className="px-4 py-3 font-semibold text-right">Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100">
+                              {redirects.map(redirect => (
+                                <tr key={redirect.id} className="hover:bg-gray-50 transition-colors">
+                                  <td className="px-4 py-4 font-medium text-gray-900 font-mono text-xs">{redirect.from}</td>
+                                  <td className="px-4 py-4 text-gray-600 truncate max-w-xs">{redirect.to}</td>
+                                  <td className="px-4 py-4 text-center">
+                                    <button onClick={() => handleToggleRedirect(redirect.id, redirect.active)} className={`p-1 rounded-full transition-colors inline-block ${redirect.active ? 'text-emerald-500' : 'text-gray-400'}`}>
+                                      {redirect.active ? <ToggleRight className="w-6 h-6" /> : <ToggleLeft className="w-6 h-6" />}
+                                    </button>
+                                  </td>
+                                  <td className="px-4 py-4 text-right">
+                                    <button onClick={() => handleDeleteRedirect(redirect.id)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors">
+                                      <Trash2 className="w-4 h-4" />
+                                    </button>
+                                  </td>
+                                </tr>
+                              ))}
+                              {redirects.length === 0 && (
+                                <tr>
+                                  <td colSpan="4" className="text-center py-8 text-gray-500">No redirects configured.</td>
+                                </tr>
+                              )}
+                            </tbody>
+                          </table>
                         </div>
                       </div>
                     </div>

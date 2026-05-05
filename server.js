@@ -16,6 +16,8 @@ const ordersFile = path.join(storageDir, "orders.json");
 const trafficLogsFile = path.join(storageDir, "traffic_logs.json");
 const leadsFile = path.join(storageDir, "leads.json");
 const productsOverrideFile = path.join(storageDir, "products_override.json");
+const redirectsFile = path.join(storageDir, "redirects.json");
+const settingsFile = path.join(storageDir, "settings.json");
 
 const JWT_SECRET = process.env.JWT_SECRET || "safta_super_secret_jwt_key_2026";
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "admin_safta";
@@ -35,6 +37,16 @@ if (!fs.existsSync(leadsFile)) {
 }
 if (!fs.existsSync(productsOverrideFile)) {
   fs.writeFileSync(productsOverrideFile, "{}", "utf8");
+}
+if (!fs.existsSync(redirectsFile)) {
+  fs.writeFileSync(redirectsFile, "[]", "utf8");
+}
+if (!fs.existsSync(settingsFile)) {
+  fs.writeFileSync(settingsFile, JSON.stringify({
+    googleSheetsUrl: "https://script.google.com/macros/s/AKfycbxLqHmgRgooygm6IxHk4pNL7srNV5NABQZpoSwKD4HWlhz5kWMr46m9BTTKWuhoyRl5yA/exec",
+    codnetworkApiKey: "",
+    maintenanceMode: false
+  }, null, 2), "utf8");
 }
 
 const readOrders = () => {
@@ -87,6 +99,52 @@ const writeProductOverrides = (overrides) => {
   fs.writeFileSync(productsOverrideFile, JSON.stringify(overrides, null, 2), "utf8");
 };
 
+const readRedirects = () => {
+  try {
+    return JSON.parse(fs.readFileSync(redirectsFile, "utf8"));
+  } catch {
+    return [];
+  }
+};
+
+const writeRedirects = (redirects) => {
+  fs.writeFileSync(redirectsFile, JSON.stringify(redirects, null, 2), "utf8");
+};
+
+const readSettings = () => {
+  try {
+    return JSON.parse(fs.readFileSync(settingsFile, "utf8"));
+  } catch {
+    return {
+      googleSheetsUrl: "https://script.google.com/macros/s/AKfycbxLqHmgRgooygm6IxHk4pNL7srNV5NABQZpoSwKD4HWlhz5kWMr46m9BTTKWuhoyRl5yA/exec",
+      codnetworkApiKey: "",
+      maintenanceMode: false
+    };
+  }
+};
+
+const writeSettings = (settings) => {
+  fs.writeFileSync(settingsFile, JSON.stringify(settings, null, 2), "utf8");
+};
+
+// --- URL Redirect Middleware ---
+app.use((req, res, next) => {
+  // Only intercept GET requests that are not API calls or admin routes
+  if (req.method === 'GET' && !req.path.startsWith('/api/') && !req.path.startsWith('/mojourney')) {
+    const redirects = readRedirects();
+    // Normalize path: strip trailing slash except for root
+    const requestPath = req.path === '/' ? '/' : req.path.replace(/\/+$/, '');
+    
+    // Find active redirect
+    const match = redirects.find(r => r.active && r.from === requestPath);
+    if (match) {
+      console.log(`Redirecting ${requestPath} -> ${match.to}`);
+      return res.redirect(301, match.to);
+    }
+  }
+  next();
+});
+
 app.use(express.json({ limit: "1mb" }));
 
 // --- Admin Authentication Middleware ---
@@ -102,6 +160,11 @@ const verifyToken = (req, res, next) => {
     res.status(403).json({ error: "Invalid Token" });
   }
 };
+
+app.get("/api/public/settings", (req, res) => {
+  const settings = readSettings();
+  res.json({ maintenanceMode: settings.maintenanceMode });
+});
 
 // --- Traffic Filtering & Geo-Fencing Middleware ---
 const ksaTrafficFilter = (req, res, next) => {
@@ -246,6 +309,79 @@ app.get("/api/admin/orders", verifyToken, (req, res) => {
   res.json({ orders });
 });
 
+// --- URL Redirects Admin Endpoints ---
+app.get("/api/admin/redirects", verifyToken, (req, res) => {
+  res.json(readRedirects());
+});
+
+app.post("/api/admin/redirects", verifyToken, (req, res) => {
+  const { from, to, active } = req.body;
+  if (!from || !to) {
+    return res.status(400).json({ error: "Missing 'from' or 'to' path." });
+  }
+
+  // Ensure 'from' starts with /
+  let normalizedFrom = from.startsWith('/') ? from : '/' + from;
+  if (normalizedFrom !== '/') normalizedFrom = normalizedFrom.replace(/\/+$/, '');
+
+  const redirects = readRedirects();
+  const existingIndex = redirects.findIndex(r => r.from === normalizedFrom);
+  
+  if (existingIndex > -1) {
+    // Update existing
+    redirects[existingIndex] = { ...redirects[existingIndex], to, active: active ?? true, updated_at: new Date().toISOString() };
+  } else {
+    // Add new
+    redirects.push({
+      id: `REDIR-${Date.now()}`,
+      from: normalizedFrom,
+      to,
+      active: active ?? true,
+      created_at: new Date().toISOString()
+    });
+  }
+  
+  writeRedirects(redirects);
+  res.json({ message: "Redirect saved", redirects });
+});
+
+app.delete("/api/admin/redirects/:id", verifyToken, (req, res) => {
+  const { id } = req.params;
+  const redirects = readRedirects();
+  const newRedirects = redirects.filter(r => r.id !== id);
+  writeRedirects(newRedirects);
+  res.json({ message: "Redirect deleted", redirects: newRedirects });
+});
+
+app.put("/api/admin/redirects/:id/status", verifyToken, (req, res) => {
+  const { id } = req.params;
+  const { active } = req.body;
+  const redirects = readRedirects();
+  const index = redirects.findIndex(r => r.id === id);
+  if (index > -1) {
+    redirects[index].active = active;
+    writeRedirects(redirects);
+    res.json({ message: "Status updated", redirect: redirects[index] });
+  } else {
+    res.status(404).json({ error: "Redirect not found" });
+  }
+});
+// -------------------------------------
+
+// --- Settings Admin Endpoints ---
+app.get("/api/admin/settings", verifyToken, (req, res) => {
+  res.json(readSettings());
+});
+
+app.put("/api/admin/settings", verifyToken, (req, res) => {
+  const updates = req.body;
+  const settings = readSettings();
+  const newSettings = { ...settings, ...updates };
+  writeSettings(newSettings);
+  res.json({ message: "Settings updated", settings: newSettings });
+});
+// -------------------------------------
+
 app.put("/api/admin/orders/:id/status", verifyToken, async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
@@ -289,9 +425,6 @@ app.post("/api/admin/orders/:id/push", verifyToken, (req, res) => {
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", service: "saftaa-care-hub" });
 });
-
-// To connect to Google Sheets, insert your Webhook URL here (e.g. from Make, Zapier, or Google Apps Script)
-const GOOGLE_SHEETS_WEBHOOK_URL = process.env.WEBHOOK_URL || "https://script.google.com/macros/s/AKfycbxLqHmgRgooygm6IxHk4pNL7srNV5NABQZpoSwKD4HWlhz5kWMr46m9BTTKWuhoyRl5yA/exec";
 
 app.post("/api/orders", async (req, res) => {
   const order = req.body ?? {};
@@ -337,7 +470,8 @@ app.post("/api/orders", async (req, res) => {
   writeOrders(orders);
 
   // Send to CODNetwork / Google Sheets Webhook
-  if (GOOGLE_SHEETS_WEBHOOK_URL) {
+  const settings = readSettings();
+  if (settings.googleSheetsUrl) {
     try {
       const sheetPayload = {
         OrderDate: stored.created_at,
@@ -354,7 +488,7 @@ app.post("/api/orders", async (req, res) => {
         notes: finalNotes,
       };
 
-      await fetch(GOOGLE_SHEETS_WEBHOOK_URL, {
+      await fetch(settings.googleSheetsUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(sheetPayload)
