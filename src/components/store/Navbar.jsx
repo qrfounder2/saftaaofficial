@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, ShoppingBag } from "lucide-react";
+import { Menu, X, ShoppingBag, Flame, Truck, Clock } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 import BrandLogo from "./BrandLogo";
@@ -39,11 +39,20 @@ function useCountdown() {
   return time;
 }
 
-// Rotates between messages every 3.5 s
+// Rotates between messages every 3.5 s — icon + text pairs
 const BAR_MESSAGES = [
-  "🔥 تبقّت آخر الكميات — الطلبات تتزايد الآن",
-  "🚚 توصيل مجاني + الدفع عند الاستلام لجميع مناطق المملكة",
-  "⏰ سعر العرض ينتهي الليلة منتصف الليل",
+  {
+    icon: <Flame className="w-3.5 h-3.5 shrink-0 text-orange-400" strokeWidth={2} />,
+    text: "تبقّت آخر الكميات — الطلبات تتزايد الآن",
+  },
+  {
+    icon: <Truck className="w-3.5 h-3.5 shrink-0 text-sky-300" strokeWidth={2} />,
+    text: "توصيل مجاني + الدفع عند الاستلام لجميع مناطق المملكة",
+  },
+  {
+    icon: <Clock className="w-3.5 h-3.5 shrink-0 text-yellow-300" strokeWidth={2} />,
+    text: "سعر العرض ينتهي الليلة منتصف الليل",
+  },
 ];
 
 function useRotatingMessage(messages, interval = 3500) {
@@ -98,12 +107,13 @@ export default function Navbar() {
 
           {/* Rotating message — center */}
           <div className="flex-1 flex justify-center overflow-hidden h-5">
-            <p
-              className="text-[11px] md:text-xs font-bold text-center transition-all duration-300 whitespace-nowrap"
+            <div
+              className="flex items-center gap-2 transition-all duration-300 whitespace-nowrap"
               style={{ opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(6px)" }}
             >
-              {message}
-            </p>
+              {message.icon}
+              <span className="text-[11px] md:text-xs font-bold">{message.text}</span>
+            </div>
           </div>
 
           {/* Right — countdown on mobile, CTA on desktop */}
