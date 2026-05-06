@@ -53,6 +53,9 @@ export default function AdminDashboard() {
   const [leads, setLeads] = useState([]);
   const [products, setProducts] = useState([]);
   const [redirects, setRedirects] = useState([]);
+  const [tickets, setTickets] = useState([]);
+  const [selectedTicket, setSelectedTicket] = useState(null);
+  const [ticketReply, setTicketReply] = useState('');
   const [storeSettings, setStoreSettings] = useState({ googleSheetsUrl: '', codnetworkApiKey: '', maintenanceMode: false });
   const [editingProduct, setEditingProduct] = useState(null);
   
@@ -82,13 +85,14 @@ export default function AdminDashboard() {
 
     try {
       if (!loading) setRefreshing(true);
-      const [ordersRes, metricsRes, leadsRes, productsOverridesRes, redirectsRes, settingsRes] = await Promise.all([
+      const [ordersRes, metricsRes, leadsRes, productsOverridesRes, redirectsRes, settingsRes, ticketsRes] = await Promise.all([
         fetch('/api/admin/orders', { headers: { 'Authorization': `Bearer ${token}` } }),
         fetch('/api/admin/metrics', { headers: { 'Authorization': `Bearer ${token}` } }),
         fetch('/api/admin/leads', { headers: { 'Authorization': `Bearer ${token}` } }),
         fetch('/api/products/overrides', { headers: { 'Authorization': `Bearer ${token}` } }),
         fetch('/api/admin/redirects', { headers: { 'Authorization': `Bearer ${token}` } }),
-        fetch('/api/admin/settings', { headers: { 'Authorization': `Bearer ${token}` } })
+        fetch('/api/admin/settings', { headers: { 'Authorization': `Bearer ${token}` } }),
+        fetch('/api/admin/tickets', { headers: { 'Authorization': `Bearer ${token}` } })
       ]);
 
       if (ordersRes.status === 401 || ordersRes.status === 403) {
@@ -103,11 +107,13 @@ export default function AdminDashboard() {
       const overridesData = await productsOverridesRes.json();
       const redirectsData = await redirectsRes.json();
       const settingsData = await settingsRes.json();
+      const ticketsData = await ticketsRes.json();
 
       setOrders(ordersData.orders || []);
       setMetrics(metricsData || { clicks: 0, uniqueVisitors: 0, totalOrders: 0, conversionRate: 0, totalRevenue: 0, leadsCount: 0, pathCounts: {} });
       setLeads(leadsData.leads || []);
       setRedirects(redirectsData || []);
+      setTickets(ticketsData || []);
       setStoreSettings(settingsData || { googleSheetsUrl: '', codnetworkApiKey: '', maintenanceMode: false });
 
       // Merge initial products with backend overrides
@@ -438,6 +444,17 @@ export default function AdminDashboard() {
                 <button onClick={() => { setActiveTab('leads'); setSidebarOpen(false); }} className={`w-full flex items-center px-4 py-2.5 rounded-md transition-colors flex justify-between ${activeTab === 'leads' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-600 hover:bg-gray-100 font-medium'}`}>
                     <div className="flex items-center"><Users className="w-5 h-5 mr-3" /> Leads Sheet</div>
                     {displayedMetrics.leadsCount > 0 && <span className="bg-red-100 text-red-600 px-2 py-0.5 rounded-full text-xs">{displayedMetrics.leadsCount}</span>}
+                </button>
+                <button onClick={() => { setActiveTab('inbox'); setSidebarOpen(false); }} className={`w-full flex items-center px-4 py-2.5 rounded-md transition-colors flex justify-between ${activeTab === 'inbox' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-600 hover:bg-gray-100 font-medium'}`}>
+                    <div className="flex items-center">
+                      <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                      Inbox
+                    </div>
+                    {tickets.filter(t => t.status === 'new').length > 0 && (
+                      <span className="bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full text-xs">
+                        {tickets.filter(t => t.status === 'new').length}
+                      </span>
+                    )}
                 </button>
                 <button onClick={() => { setActiveTab('settings'); setSidebarOpen(false); }} className={`w-full flex items-center px-4 py-2.5 rounded-md transition-colors ${activeTab === 'settings' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-600 hover:bg-gray-100 font-medium'}`}>
                     <Settings className="w-5 h-5 mr-3" /> Store Settings
@@ -979,6 +996,161 @@ export default function AdminDashboard() {
                         </div>
                       </div>
                     </div>
+                )}
+                
+                {/* Inbox Tab */}
+                {activeTab === 'inbox' && (
+                  <div className="flex flex-col h-full bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                    <div className="flex flex-col md:flex-row h-[calc(100vh-140px)]">
+                      {/* Ticket List */}
+                      <div className="w-full md:w-1/3 border-b md:border-b-0 md:border-r border-gray-200 flex flex-col bg-gray-50/50">
+                        <div className="p-4 border-b border-gray-200 bg-white">
+                          <h2 className="text-lg font-bold text-gray-800">Support Inbox</h2>
+                          <p className="text-xs text-gray-500 mt-1">Manage customer inquiries</p>
+                        </div>
+                        <div className="flex-1 overflow-y-auto">
+                          {tickets.length === 0 ? (
+                            <div className="p-8 text-center text-gray-500 text-sm">No tickets yet.</div>
+                          ) : (
+                            tickets.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).map(t => (
+                              <button
+                                key={t.id}
+                                onClick={() => setSelectedTicket(t)}
+                                className={`w-full text-left p-4 border-b border-gray-100 transition-colors ${selectedTicket?.id === t.id ? 'bg-blue-50/50 border-l-4 border-l-blue-500' : 'hover:bg-gray-50 border-l-4 border-l-transparent'}`}
+                              >
+                                <div className="flex justify-between items-start mb-1">
+                                  <span className="font-bold text-sm text-gray-900 truncate pr-2">{t.name}</span>
+                                  <span className="text-[10px] text-gray-500 whitespace-nowrap">{new Date(t.createdAt).toLocaleDateString()}</span>
+                                </div>
+                                <div className="text-xs text-gray-500 truncate mb-2">{t.message}</div>
+                                <div className="flex justify-between items-center">
+                                  <span className="text-[10px] font-mono text-gray-400">{t.id}</span>
+                                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
+                                    t.status === 'new' ? 'bg-blue-100 text-blue-700' :
+                                    t.status === 'replied' ? 'bg-emerald-100 text-emerald-700' :
+                                    'bg-gray-100 text-gray-600'
+                                  }`}>
+                                    {t.status.toUpperCase()}
+                                  </span>
+                                </div>
+                              </button>
+                            ))
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Ticket Details & Reply */}
+                      <div className="flex-1 flex flex-col bg-white">
+                        {selectedTicket ? (
+                          <>
+                            {/* Header */}
+                            <div className="p-4 border-b border-gray-200 flex justify-between items-center bg-white">
+                              <div>
+                                <h3 className="font-bold text-gray-900">{selectedTicket.name}</h3>
+                                <div className="flex items-center gap-3 text-xs text-gray-500 mt-1">
+                                  <span className="flex items-center gap-1"><Phone className="w-3 h-3" /> {selectedTicket.phone}</span>
+                                  {selectedTicket.orderId && <span>Order: <span className="font-mono">{selectedTicket.orderId}</span></span>}
+                                </div>
+                              </div>
+                              {selectedTicket.status !== 'closed' && (
+                                <button 
+                                  onClick={async () => {
+                                    const token = localStorage.getItem('adminToken');
+                                    const res = await fetch(`/api/admin/tickets/${selectedTicket.id}/close`, {
+                                      method: 'POST',
+                                      headers: { 'Authorization': `Bearer ${token}` }
+                                    });
+                                    if (res.ok) {
+                                      const updated = await res.json();
+                                      setTickets(tickets.map(t => t.id === updated.id ? updated : t));
+                                      setSelectedTicket(updated);
+                                      toast({ title: "Ticket closed" });
+                                    }
+                                  }}
+                                  className="text-xs px-3 py-1.5 border border-gray-200 rounded-md hover:bg-gray-50 text-gray-600 font-medium"
+                                >
+                                  Close Ticket
+                                </button>
+                              )}
+                            </div>
+
+                            {/* Conversation */}
+                            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/30">
+                              {/* Original Message */}
+                              <div className="flex flex-col items-start max-w-[85%]">
+                                <span className="text-[10px] text-gray-400 mb-1 ml-1">{new Date(selectedTicket.createdAt).toLocaleString()}</span>
+                                <div className="bg-white border border-gray-200 text-gray-800 p-3.5 rounded-2xl rounded-tl-sm text-sm shadow-sm">
+                                  {selectedTicket.message}
+                                </div>
+                              </div>
+                              
+                              {/* Replies */}
+                              {selectedTicket.replies.map((reply, i) => (
+                                <div key={i} className={`flex flex-col ${reply.from === 'admin' ? 'items-end' : 'items-start'} max-w-[85%] ${reply.from === 'admin' ? 'ml-auto' : ''}`}>
+                                  <span className={`text-[10px] text-gray-400 mb-1 ${reply.from === 'admin' ? 'mr-1' : 'ml-1'}`}>
+                                    {reply.from === 'admin' ? 'You' : selectedTicket.name} • {new Date(reply.createdAt).toLocaleString()}
+                                  </span>
+                                  <div className={`p-3.5 rounded-2xl text-sm shadow-sm ${
+                                    reply.from === 'admin' 
+                                      ? 'bg-blue-600 text-white rounded-tr-sm' 
+                                      : 'bg-white border border-gray-200 text-gray-800 rounded-tl-sm'
+                                  }`}>
+                                    {reply.message}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+
+                            {/* Reply Box */}
+                            {selectedTicket.status !== 'closed' ? (
+                              <div className="p-4 border-t border-gray-200 bg-white">
+                                <div className="flex gap-2">
+                                  <textarea
+                                    value={ticketReply}
+                                    onChange={(e) => setTicketReply(e.target.value)}
+                                    placeholder="Type your reply... (Customer will receive this via SMS)"
+                                    className="flex-1 border border-gray-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none resize-none h-20"
+                                  />
+                                  <button
+                                    disabled={!ticketReply.trim()}
+                                    onClick={async () => {
+                                      const token = localStorage.getItem('adminToken');
+                                      const res = await fetch(`/api/admin/tickets/${selectedTicket.id}/reply`, {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                                        body: JSON.stringify({ reply: ticketReply })
+                                      });
+                                      if (res.ok) {
+                                        const updated = await res.json();
+                                        setTickets(tickets.map(t => t.id === updated.id ? updated : t));
+                                        setSelectedTicket(updated);
+                                        setTicketReply('');
+                                        toast({ title: "Reply sent via SMS", description: "Customer has been notified." });
+                                      }
+                                    }}
+                                    className="bg-blue-600 text-white px-6 rounded-xl font-bold text-sm hover:bg-blue-700 disabled:opacity-50 transition-colors flex flex-col items-center justify-center gap-1"
+                                  >
+                                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                                    <span>Send</span>
+                                  </button>
+                                </div>
+                                <p className="text-[10px] text-gray-400 mt-2 text-center">Replies are sent automatically to the customer's phone number via SMS gateway.</p>
+                              </div>
+                            ) : (
+                              <div className="p-4 border-t border-gray-200 bg-gray-50 text-center text-sm text-gray-500">
+                                This ticket is closed.
+                              </div>
+                            )}
+                          </>
+                        ) : (
+                          <div className="flex-1 flex flex-col items-center justify-center text-gray-400">
+                            <svg className="w-16 h-16 mb-4 text-gray-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                            <p>Select a ticket to view the conversation</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 )}
 
             </div>

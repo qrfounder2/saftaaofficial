@@ -26,6 +26,7 @@ const leadsFile = path.join(storageDir, "leads.json");
 const productsOverrideFile = path.join(storageDir, "products_override.json");
 const redirectsFile = path.join(storageDir, "redirects.json");
 const settingsFile = path.join(storageDir, "settings.json");
+const ticketsFile = path.join(storageDir, "tickets.json");
 
 const JWT_SECRET = process.env.JWT_SECRET || "safta_super_secret_jwt_key_2026";
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "admin";
@@ -48,6 +49,9 @@ if (!fs.existsSync(productsOverrideFile)) {
 }
 if (!fs.existsSync(redirectsFile)) {
   fs.writeFileSync(redirectsFile, "[]", "utf8");
+}
+if (!fs.existsSync(ticketsFile)) {
+  fs.writeFileSync(ticketsFile, "[]", "utf8");
 }
 if (!fs.existsSync(settingsFile)) {
   fs.writeFileSync(settingsFile, JSON.stringify({
@@ -133,6 +137,19 @@ const readSettings = () => {
 
 const writeSettings = (settings) => {
   fs.writeFileSync(settingsFile, JSON.stringify(settings, null, 2), "utf8");
+};
+
+// --- Tickets Helpers ---
+const readTickets = () => {
+  try {
+    return JSON.parse(fs.readFileSync(ticketsFile, "utf8"));
+  } catch {
+    return [];
+  }
+};
+
+const writeTickets = (tickets) => {
+  fs.writeFileSync(ticketsFile, JSON.stringify(tickets, null, 2), "utf8");
 };
 
 // --- URL Redirect Middleware ---
@@ -461,6 +478,69 @@ app.post("/api/admin/orders/:id/push", verifyToken, (req, res) => {
 });
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", service: "saftaa-care-hub" });
+});
+
+// --- Tickets API (Public & Admin) ---
+
+app.post("/api/tickets", (req, res) => {
+  const { orderId, name, phone, message } = req.body;
+  if (!message || !phone) {
+    return res.status(400).json({ error: "Phone and message are required" });
+  }
+  
+  const tickets = readTickets();
+  const newTicket = {
+    id: "TKT-" + Math.random().toString(36).substr(2, 6).toUpperCase(),
+    orderId: orderId || "",
+    name: name || "عميل",
+    phone,
+    message,
+    status: "new", // new, replied, closed
+    replies: [],
+    createdAt: new Date().toISOString()
+  };
+  
+  tickets.push(newTicket);
+  writeTickets(tickets);
+  
+  res.status(201).json(newTicket);
+});
+
+app.get("/api/admin/tickets", verifyToken, (req, res) => {
+  res.json(readTickets());
+});
+
+app.post("/api/admin/tickets/:id/reply", verifyToken, (req, res) => {
+  const { reply } = req.body;
+  if (!reply) return res.status(400).json({ error: "Reply message is required" });
+  
+  const tickets = readTickets();
+  const ticketIndex = tickets.findIndex(t => t.id === req.params.id);
+  if (ticketIndex === -1) return res.status(404).json({ error: "Ticket not found" });
+
+  tickets[ticketIndex].replies.push({
+    message: reply,
+    createdAt: new Date().toISOString(),
+    from: "admin"
+  });
+  tickets[ticketIndex].status = "replied";
+  
+  writeTickets(tickets);
+
+  // Mock SMS Gateway integration
+  console.log(`[SMS GATEWAY MOCK] Sending SMS to ${tickets[ticketIndex].phone}: "رد من صفتا كير: ${reply}"`);
+
+  res.json(tickets[ticketIndex]);
+});
+
+app.post("/api/admin/tickets/:id/close", verifyToken, (req, res) => {
+  const tickets = readTickets();
+  const ticketIndex = tickets.findIndex(t => t.id === req.params.id);
+  if (ticketIndex === -1) return res.status(404).json({ error: "Ticket not found" });
+
+  tickets[ticketIndex].status = "closed";
+  writeTickets(tickets);
+  res.json(tickets[ticketIndex]);
 });
 
 app.post("/api/orders", async (req, res) => {
