@@ -21,10 +21,14 @@ export default function ProductCard({ product, index = 0 }) {
       >
         {/* Image */}
         <div className="relative aspect-square overflow-hidden bg-secondary">
+          <div className="absolute inset-0 bg-gray-100 animate-pulse" aria-hidden="true" />
           <img
             src={product.images?.[0] || "/images/products/product-default.webp"}
             alt={product.name}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+            loading="lazy"
+            decoding="async"
+            onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/images/products/product-default.svg"; }}
+            className="relative w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
           />
           {product.badge && (
             <span className="absolute top-3 right-3 bg-destructive text-destructive-foreground text-[10px] font-bold px-3 py-1 rounded-full">

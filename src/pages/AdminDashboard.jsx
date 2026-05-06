@@ -552,7 +552,7 @@ export default function AdminDashboard() {
                         {visibleProducts.map(product => (
                           <div key={product.id} className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4 transition-all hover:shadow-md">
                             <div className="flex items-center gap-4 flex-1">
-                              <img src={product.images[0]} alt={product.name} className="w-16 h-16 object-cover rounded-lg border border-gray-100 bg-gray-50" />
+                              <img src={product.images[0]} alt={product.name} loading="lazy" decoding="async" className="w-16 h-16 object-cover rounded-lg border border-gray-100 bg-gray-50" />
                               <div>
                                 <h3 className="font-bold text-gray-900 text-sm md:text-base">{product.name}</h3>
                                 <p className="text-xs text-gray-500 font-mono mt-1">{product.id}</p>

@@ -123,6 +123,10 @@ export default function HeroSlider() {
               <img
                 src={slide.image}
                 alt={slide.title}
+                fetchpriority={current === 0 ? "high" : "low"}
+                decoding="async"
+                loading={current === 0 ? "eager" : "lazy"}
+                onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/images/products/product-default.svg"; }}
                 className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
               />
               

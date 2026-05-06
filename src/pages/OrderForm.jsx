@@ -122,7 +122,7 @@ export default function OrderForm() {
             <h2 className="text-sm font-bold mb-3">ملخص الطلب</h2>
             <div className="flex items-center gap-3">
               {product?.images?.[0] && (
-                <img src={product.images[0]} alt="" className="w-16 h-16 rounded-xl object-cover" />
+                <img src={product.images[0]} alt="" loading="lazy" decoding="async" className="w-16 h-16 rounded-xl object-cover" />
               )}
               <div className="flex-1">
                 <p className="font-bold text-sm">{product?.name || "جاري التحميل..."}</p>

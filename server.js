@@ -1,4 +1,5 @@
 import express from "express";
+import compression from "compression";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -180,6 +181,7 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use(compression());
 app.use(express.json({ limit: "1mb" }));
 
 // --- Admin Authentication Middleware ---
@@ -538,7 +540,25 @@ app.post("/api/orders", async (req, res) => {
 });
 
 if (fs.existsSync(distDir)) {
-  app.use(express.static(distDir));
+  // Immutable cache for hashed JS/CSS bundles (Vite fingerprints filenames)
+  app.use(
+    "/assets",
+    express.static(path.join(distDir, "assets"), {
+      maxAge: "1y",
+      immutable: true,
+    })
+  );
+  // Long-lived cache for images (30 days)
+  app.use(
+    "/images",
+    express.static(path.join(distDir, "images"), {
+      maxAge: "30d",
+      setHeaders(res) {
+        res.setHeader("Cache-Control", "public, max-age=2592000");
+      },
+    })
+  );
+  app.use(express.static(distDir, { maxAge: "1h" }));
   app.get("*", (_req, res) => {
     res.sendFile(path.join(distDir, "index.html"));
   });

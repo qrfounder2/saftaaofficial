@@ -196,6 +196,9 @@ export default function Testimonials({ type = "home" }) {
                 <img
                   src={review.avatar}
                   alt={review.name}
+                  loading="lazy"
+                  decoding="async"
+                  onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/images/products/product-alt.svg"; }}
                   className="w-10 h-10 rounded-full object-cover bg-muted border border-border/40"
                 />
                 <div className="flex-1 min-w-0">

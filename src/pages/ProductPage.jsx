@@ -109,12 +109,16 @@ export default function ProductPage() {
               key={selectedImage}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="aspect-square rounded-2xl overflow-hidden bg-secondary mb-3"
+              className="relative aspect-square rounded-2xl overflow-hidden bg-secondary mb-3"
             >
+              <div className="absolute inset-0 bg-gray-100 animate-pulse" aria-hidden="true" />
               <img
                 src={images[selectedImage]}
                 alt={product.name}
-                className="w-full h-full object-cover"
+                fetchpriority="high"
+                decoding="async"
+                onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/images/products/product-default.svg"; }}
+                className="relative w-full h-full object-cover"
               />
             </motion.div>
             {images.length > 1 && (
@@ -127,7 +131,7 @@ export default function ProductPage() {
                       i === selectedImage ? "border-primary" : "border-border"
                     }`}
                   >
-                    <img src={img} alt="" className="w-full h-full object-cover" />
+                    <img src={img} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" />
                   </button>
                 ))}
               </div>
