@@ -47,25 +47,29 @@ export default function OrderForm() {
   const totalPrice = basePrice + (formData.addUpsell ? 24 : 0);
   const packLabel = pack === "5" ? "٥ عبوات" : pack === "3" ? "٣ عبوات" : "عبوة واحدة";
 
+  // TikTok Pixel: InitiateCheckout
+  const hasTrackedCheckout = React.useRef(false);
+  useEffect(() => {
+    if (product && !hasTrackedCheckout.current && window.ttq) {
+      window.ttq.track('InitiateCheckout', {
+        contents: [{
+          content_id: product.id,
+          content_name: product.name,
+          price: totalPrice,
+          quantity: parseInt(pack) || 1
+        }],
+        content_type: 'product',
+        value: totalPrice,
+        currency: 'SAR'
+      });
+      hasTrackedCheckout.current = true;
+    }
+  }, [product, totalPrice, pack]);
+
   const createOrder = useMutation({
     mutationFn: (orderData) => storeClient.entities.Order.create(orderData),
     onSuccess: (data) => {
-      // TikTok Pixel: CompletePayment
-      if (window.ttq) {
-        window.ttq.track('CompletePayment', {
-          contents: [{
-            content_id: product?.id,
-            content_name: product?.name,
-            price: totalPrice,
-            quantity: parseInt(pack) || 1
-          }],
-          content_type: 'product',
-          value: totalPrice,
-          currency: 'SAR',
-          event_id: data.id // Deduplication
-        });
-      }
-      navigate(`/thank-you?order=${data.id}&name=${encodeURIComponent(formData.name)}`);
+      navigate(`/thank-you?order=${data.id}&name=${encodeURIComponent(formData.name)}&price=${totalPrice}`);
     },
   });
 

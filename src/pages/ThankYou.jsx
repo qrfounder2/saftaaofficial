@@ -10,6 +10,7 @@ export default function ThankYou() {
   const params = new URLSearchParams(window.location.search);
   const orderId = params.get("order");
   const customerName = params.get("name") || "";
+  const price = params.get("price");
 
   const { data: products } = useQuery({
     queryKey: ["upsell-products"],
@@ -17,9 +18,22 @@ export default function ThankYou() {
     initialData: [],
   });
 
+  const hasTrackedPurchase = React.useRef(false);
+
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, []);
+
+    // TikTok Pixel: CompletePayment
+    if (orderId && price && !hasTrackedPurchase.current && window.ttq) {
+      window.ttq.track('CompletePayment', {
+        content_type: 'product',
+        value: Number(price),
+        currency: 'SAR',
+        event_id: orderId // Deduplication
+      });
+      hasTrackedPurchase.current = true;
+    }
+  }, [orderId, price]);
 
   return (
     <div className="min-h-screen bg-secondary/30">

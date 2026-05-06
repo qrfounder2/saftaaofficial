@@ -80,7 +80,10 @@ export default function ProductPage() {
       });
     }
 
-    navigate(`/order?product=${product?.id}&pack=${qty}&price=${price}`);
+    // Give pixel a tiny moment to fire before unmounting
+    setTimeout(() => {
+      navigate(`/order?product=${product?.id}&pack=${qty}&price=${price}`);
+    }, 150);
   };
 
   const scrollToCTA = () => {
