@@ -24,8 +24,9 @@ export default function ProductPage() {
   const { slug } = useParams();
   const navigate = useNavigate();
   const [selectedImage, setSelectedImage] = useState(0);
-  const [selectedPack, setSelectedPack] = useState("3");
+  const [selectedPack, setSelectedPack] = useState(null);
   const [packData, setPackData] = useState(null);
+  const [packError, setPackError] = useState(false);
 
   const { data: product, isLoading } = useQuery({
     queryKey: ["product", slug],
@@ -62,8 +63,15 @@ export default function ProductPage() {
   }, [product]);
 
   const handleBuy = () => {
-    const price = packData?.price || product?.price;
-    const qty = packData?.id || "1";
+    if (!selectedPack || !packData) {
+      setPackError(true);
+      scrollToCTA();
+      return;
+    }
+    setPackError(false);
+
+    const price = packData.price || product?.price;
+    const qty = packData.id || "1";
 
     // TikTok Pixel: AddToCart
     if (window.ttq) {
@@ -282,9 +290,21 @@ export default function ProductPage() {
             </div>
 
             {/* Premium Minimalist CTA Section */}
-            <div id="cta-section" className="mb-6 bg-gray-100 border border-gray-200 rounded-2xl p-5 md:p-6">
-              <div className="flex items-center justify-between mb-5">
-                <h3 className="text-base md:text-lg font-bold text-gray-900">اختر العرض المناسب لك لإتمام الطلب:</h3>
+            <div id="cta-section" className={`mb-6 bg-gray-100 border rounded-2xl p-5 md:p-6 transition-all duration-300 ${packError ? 'border-red-500 ring-2 ring-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.1)]' : 'border-gray-200'}`}>
+              <div className="flex flex-col mb-5">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-base md:text-lg font-bold text-gray-900">اختر العرض المناسب لك لإتمام الطلب:</h3>
+                </div>
+                {packError && (
+                  <motion.p 
+                    initial={{ opacity: 0, y: -5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-xs md:text-sm text-red-600 font-bold mt-2.5 flex items-center gap-1.5 bg-red-50 w-fit px-3 py-1.5 rounded-md border border-red-100"
+                  >
+                    <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                    الرجاء اختيار أحد العروض للمتابعة
+                  </motion.p>
+                )}
               </div>
               
               <QuantitySelector
@@ -293,6 +313,7 @@ export default function ProductPage() {
                 onSelect={(pack) => {
                   setSelectedPack(pack.id);
                   setPackData(pack);
+                  setPackError(false);
                 }}
               />
 
