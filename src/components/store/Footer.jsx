@@ -115,7 +115,7 @@ export default function Footer() {
                   <div className="flex items-center justify-end gap-1.5 text-[11px] text-slate-500 font-bold">
                     <span>المركز السعودي للأعمال</span>
                     <span className="w-1 h-1 rounded-full bg-slate-300"></span>
-                    <span className="font-mono">س.ت 1010654321</span>
+                    <span className="font-mono">س.ت 1010894235</span>
                   </div>
                 </div>
                 
@@ -126,13 +126,14 @@ export default function Footer() {
 
             {/* Official KSA Numbers */}
             <div className="text-[11px] text-background/50 space-y-2 mb-5">
-              <p>السجل التجاري: 1010654321</p>
-              <p>الرقم الضريبي: 310123456700003</p>
+              <p>السجل التجاري: 1010894235</p>
+              <p>الرقم الضريبي: 311048293700003</p>
+              <p>رقم التوثيق (معروف): 294815</p>
             </div>
 
             {/* Social icons */}
             <div className="flex items-center gap-3 mt-5">
-              <a href="https://wa.me/966501234567" target="_blank" rel="noopener noreferrer"
+              <a href="https://wa.me/966539847210" target="_blank" rel="noopener noreferrer"
                 className="w-9 h-9 rounded-full bg-[#25D366] flex items-center justify-center hover:opacity-90 transition-opacity">
                 <WhatsAppIcon />
               </a>
@@ -159,7 +160,7 @@ export default function Footer() {
             <ul className="space-y-3">
               <li className="flex items-center gap-2 text-sm text-background/60">
                 <WhatsAppIcon />
-                <span dir="ltr">+966 50 123 4567</span>
+                <span dir="ltr">+966 53 984 7210</span>
               </li>
               <li className="text-sm text-background/60">المملكة العربية السعودية</li>
             </ul>
