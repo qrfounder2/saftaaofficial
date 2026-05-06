@@ -120,6 +120,17 @@ html {
   }
 }
 
+@keyframes ticker {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-ticker {
+  animation: ticker 28s linear infinite;
+  /* duplicate content so loop is seamless */
+  width: max-content;
+}
+
 @layer components {
   .elegant-surface {
     background: #FFFFFF;

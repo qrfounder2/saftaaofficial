@@ -5,9 +5,43 @@ import { motion, AnimatePresence } from "framer-motion";
 
 import BrandLogo from "./BrandLogo";
 
+// Countdown target — 48 hours from a fixed launch point so it persists across refreshes
+const SALE_ENDS_KEY = "saftaa_sale_ends";
+function getSaleEnd() {
+  let end = parseInt(localStorage.getItem(SALE_ENDS_KEY) || "0", 10);
+  if (!end || end < Date.now()) {
+    end = Date.now() + 48 * 60 * 60 * 1000;
+    localStorage.setItem(SALE_ENDS_KEY, String(end));
+  }
+  return end;
+}
+
+function useCountdown() {
+  const [time, setTime] = useState({ h: "00", m: "00", s: "00" });
+  useEffect(() => {
+    const end = getSaleEnd();
+    function tick() {
+      const diff = Math.max(0, end - Date.now());
+      const h = Math.floor(diff / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+      setTime({
+        h: String(h).padStart(2, "0"),
+        m: String(m).padStart(2, "0"),
+        s: String(s).padStart(2, "0"),
+      });
+    }
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, []);
+  return time;
+}
+
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const countdown = useCountdown();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -25,16 +59,25 @@ export default function Navbar() {
 
   return (
     <>
-      {/* Top announcement bar */}
-      <div className="bg-slate-900 text-white py-2 text-[10px] md:text-xs font-bold flex flex-wrap items-center justify-center gap-x-6 gap-y-1">
-        <span className="flex items-center gap-1.5">
-          <svg className="w-3.5 h-3.5 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="1" y="3" width="15" height="13" rx="1"></rect><path d="M16 8h4l3 3v5h-7V8z"></path><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
-          شحن مجاني لكافة مدن المملكة
+      {/* ── Announcement bar with countdown ── */}
+      <div className="bg-black text-white py-2 px-4 flex items-center justify-center gap-4 md:gap-8">
+        <span className="text-[10px] md:text-xs font-black tracking-widest uppercase">
+          عرض محدود
         </span>
-        <span className="hidden md:flex text-slate-600">|</span>
-        <span className="flex items-center gap-1.5 text-amber-400">
-          <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
-          الدفع عند الاستلام متاح مجاناً
+        {/* Countdown */}
+        <div className="flex items-center gap-1 md:gap-2">
+          {[{ v: countdown.h, l: "سا" }, { v: countdown.m, l: "د" }, { v: countdown.s, l: "ث" }].map(({ v, l }, i) => (
+            <React.Fragment key={i}>
+              {i > 0 && <span className="text-white/40 font-black text-sm">:</span>}
+              <div className="flex flex-col items-center">
+                <span className="text-sm md:text-base font-black tabular-nums leading-none">{v}</span>
+                <span className="text-[8px] text-white/50 leading-none mt-0.5">{l}</span>
+              </div>
+            </React.Fragment>
+          ))}
+        </div>
+        <span className="hidden md:block text-[10px] font-bold tracking-wider text-white/60 uppercase">
+          ينتهي العرض قريباً
         </span>
       </div>
 
