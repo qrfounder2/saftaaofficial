@@ -5,7 +5,7 @@ import TrendingProducts from "../components/store/TrendingProducts";
 import Testimonials from "../components/store/Testimonials";
 import FAQ from "../components/store/FAQ";
 import { motion } from "framer-motion";
-import { Shield, Truck, Headset, Banknote, Leaf, Zap, Award } from "lucide-react";
+import { Shield, Truck, Headset, Award } from "lucide-react";
 import { Link } from "react-router-dom";
 function WhyUsSection() {
   const reasons = [

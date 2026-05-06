@@ -19,7 +19,6 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Skeleton } from "@/components/ui/skeleton";
-import { paymentIcons } from "../lib/payments";
 
 export default function ProductPage() {
   const { id } = useParams();

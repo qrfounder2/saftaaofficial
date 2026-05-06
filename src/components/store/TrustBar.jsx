@@ -1,7 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 
-import { ShieldCheck, Truck, CreditCard, Banknote, HeadphonesIcon } from "lucide-react";
+import { ShieldCheck, Truck, Banknote, HeadphonesIcon } from "lucide-react";
 
 const features = [
   { 

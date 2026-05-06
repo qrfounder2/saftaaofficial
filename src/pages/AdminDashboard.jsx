@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
-import { LayoutDashboard, ShoppingCart, Settings, X, Truck, LogOut, Package, Activity, Users, FileText, ToggleLeft, ToggleRight, Edit2, Save, Link as LinkIcon, Trash2, Download } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, Settings, X, Truck, LogOut, Package, Activity, Users, FileText, ToggleLeft, ToggleRight, Edit2, Save, Link as LinkIcon, Trash2, Download, Menu } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { products as initialProducts } from '@/data/products';
 
@@ -47,6 +47,7 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [selectedDateRange, setSelectedDateRange] = useState('All Time');
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   
   const [orders, setOrders] = useState([]);
   const [leads, setLeads] = useState([]);
@@ -60,6 +61,14 @@ export default function AdminDashboard() {
 
   const [metrics, setMetrics] = useState({ clicks: 0, uniqueVisitors: 0, totalOrders: 0, conversionRate: 0, totalRevenue: 0, leadsCount: 0, pathCounts: {} });
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [productSearch, setProductSearch] = useState('');
+  const [orderSearch, setOrderSearch] = useState('');
+  const [leadSearch, setLeadSearch] = useState('');
+  const [redirectSearch, setRedirectSearch] = useState('');
+  const [orderStatusFilter, setOrderStatusFilter] = useState('all');
+  const [leadStatusFilter, setLeadStatusFilter] = useState('all');
+  const [productDrafts, setProductDrafts] = useState({});
   
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -72,6 +81,7 @@ export default function AdminDashboard() {
     }
 
     try {
+      if (!loading) setRefreshing(true);
       const [ordersRes, metricsRes, leadsRes, productsOverridesRes, redirectsRes, settingsRes] = await Promise.all([
         fetch('/api/admin/orders', { headers: { 'Authorization': `Bearer ${token}` } }),
         fetch('/api/admin/metrics', { headers: { 'Authorization': `Bearer ${token}` } }),
@@ -111,6 +121,7 @@ export default function AdminDashboard() {
       console.error("Failed to fetch dashboard data:", error);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -183,6 +194,27 @@ export default function AdminDashboard() {
 
   const handleToggleProductActive = (product) => {
     saveProductUpdate(product.id, { is_active: !product.is_active });
+  };
+
+  const startEditingProduct = (product) => {
+    setEditingProduct(product.id);
+    setProductDrafts((prev) => ({
+      ...prev,
+      [product.id]: {
+        price: product.price,
+        stock: product.stock,
+      },
+    }));
+  };
+
+  const updateProductDraft = (productId, field, value) => {
+    setProductDrafts((prev) => ({
+      ...prev,
+      [productId]: {
+        ...(prev[productId] || {}),
+        [field]: value,
+      },
+    }));
   };
 
   const handleAddRedirect = async (e) => {
@@ -285,36 +317,132 @@ export default function AdminDashboard() {
     return <div className="flex h-screen items-center justify-center bg-gray-50">جاري التحميل...</div>;
   }
 
+  const getDateThreshold = () => {
+    const now = new Date();
+    const start = new Date(now);
+    switch (selectedDateRange) {
+      case 'Today':
+        start.setHours(0, 0, 0, 0);
+        return start;
+      case 'Yesterday':
+        start.setDate(start.getDate() - 1);
+        start.setHours(0, 0, 0, 0);
+        return start;
+      case 'Last 7 Days':
+        start.setDate(start.getDate() - 7);
+        return start;
+      case 'This Month':
+        start.setDate(1);
+        start.setHours(0, 0, 0, 0);
+        return start;
+      default:
+        return null;
+    }
+  };
+
+  const dateThreshold = getDateThreshold();
+  const filteredOrders = dateThreshold
+    ? orders.filter((order) => new Date(order.created_at) >= dateThreshold)
+    : orders;
+  const filteredLeads = dateThreshold
+    ? leads.filter((lead) => new Date(lead.created_at) >= dateThreshold)
+    : leads;
+
+  const rangeRevenue = filteredOrders.reduce((sum, order) => {
+    if (order.status !== 'RTO') {
+      return sum + (Number(order.total_price) || 0);
+    }
+    return sum;
+  }, 0);
+
+  const displayedMetrics = {
+    ...metrics,
+    totalOrders: filteredOrders.length,
+    totalRevenue: rangeRevenue,
+    leadsCount: filteredLeads.length,
+  };
+
+  const normalizedProductSearch = productSearch.trim().toLowerCase();
+  const normalizedOrderSearch = orderSearch.trim().toLowerCase();
+  const normalizedLeadSearch = leadSearch.trim().toLowerCase();
+  const normalizedRedirectSearch = redirectSearch.trim().toLowerCase();
+
+  const visibleProducts = products.filter((product) => {
+    if (!normalizedProductSearch) return true;
+    return (
+      product.name?.toLowerCase().includes(normalizedProductSearch) ||
+      product.id?.toLowerCase().includes(normalizedProductSearch)
+    );
+  });
+
+  const visibleOrders = filteredOrders.filter((order) => {
+    const matchesSearch = !normalizedOrderSearch || [
+      order.id,
+      order.customer_name,
+      order.phone,
+      order.product_name,
+    ].some((value) => (value || '').toString().toLowerCase().includes(normalizedOrderSearch));
+    const matchesStatus =
+      orderStatusFilter === 'all' ||
+      (order.status || 'Pending_Confirmation') === orderStatusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
+  const visibleLeads = filteredLeads.filter((lead) => {
+    const matchesSearch = !normalizedLeadSearch || [
+      lead.id,
+      lead.phone,
+      lead.product_name,
+      lead.status,
+    ].some((value) => (value || '').toString().toLowerCase().includes(normalizedLeadSearch));
+    const matchesStatus = leadStatusFilter === 'all' || (lead.status || '') === leadStatusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
+  const visibleRedirects = redirects.filter((redirect) => {
+    if (!normalizedRedirectSearch) return true;
+    return (
+      (redirect.from || '').toLowerCase().includes(normalizedRedirectSearch) ||
+      (redirect.to || '').toLowerCase().includes(normalizedRedirectSearch)
+    );
+  });
+
   const pathData = Object.entries(metrics.pathCounts || {}).map(([path, count]) => ({ path, count })).sort((a, b) => b.count - a.count).slice(0, 5);
 
   return (
-    <div className="flex h-screen bg-gray-50 text-gray-900 font-sans" dir="ltr">
+    <div className="flex h-screen bg-gray-50 text-gray-900 font-sans relative" dir="ltr">
         {/* Sidebar */}
-        <aside className="w-64 bg-white border-r border-gray-200 flex flex-col shadow-sm z-10">
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 bg-black/40 z-30 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+        <aside className={`fixed lg:static inset-y-0 left-0 w-72 lg:w-64 bg-white border-r border-gray-200 flex flex-col shadow-sm z-40 transform transition-transform duration-200 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
             <div className="h-16 flex items-center px-6 border-b border-gray-200">
                 <span className="text-xl font-bold text-emerald-600 tracking-tight">Safta Dashboard</span>
             </div>
             <nav className="flex-1 p-4 space-y-1">
-                <button onClick={() => setActiveTab('dashboard')} className={`w-full flex items-center px-4 py-2.5 rounded-md transition-colors ${activeTab === 'dashboard' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-600 hover:bg-gray-100 font-medium'}`}>
+                <button onClick={() => { setActiveTab('dashboard'); setSidebarOpen(false); }} className={`w-full flex items-center px-4 py-2.5 rounded-md transition-colors ${activeTab === 'dashboard' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-600 hover:bg-gray-100 font-medium'}`}>
                     <LayoutDashboard className="w-5 h-5 mr-3" /> Overview
                 </button>
-                <button onClick={() => setActiveTab('orders')} className={`w-full flex items-center px-4 py-2.5 rounded-md transition-colors ${activeTab === 'orders' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-600 hover:bg-gray-100 font-medium'}`}>
+                <button onClick={() => { setActiveTab('orders'); setSidebarOpen(false); }} className={`w-full flex items-center px-4 py-2.5 rounded-md transition-colors ${activeTab === 'orders' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-600 hover:bg-gray-100 font-medium'}`}>
                     <ShoppingCart className="w-5 h-5 mr-3" /> Orders
                 </button>
-                <button onClick={() => setActiveTab('products')} className={`w-full flex items-center px-4 py-2.5 rounded-md transition-colors ${activeTab === 'products' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-600 hover:bg-gray-100 font-medium'}`}>
+                <button onClick={() => { setActiveTab('products'); setSidebarOpen(false); }} className={`w-full flex items-center px-4 py-2.5 rounded-md transition-colors ${activeTab === 'products' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-600 hover:bg-gray-100 font-medium'}`}>
                     <Package className="w-5 h-5 mr-3" /> Products
                 </button>
-                <button onClick={() => setActiveTab('analytics')} className={`w-full flex items-center px-4 py-2.5 rounded-md transition-colors ${activeTab === 'analytics' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-600 hover:bg-gray-100 font-medium'}`}>
+                <button onClick={() => { setActiveTab('analytics'); setSidebarOpen(false); }} className={`w-full flex items-center px-4 py-2.5 rounded-md transition-colors ${activeTab === 'analytics' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-600 hover:bg-gray-100 font-medium'}`}>
                     <Activity className="w-5 h-5 mr-3" /> Analytics & Traffic
                 </button>
-                <button onClick={() => setActiveTab('leads')} className={`w-full flex items-center px-4 py-2.5 rounded-md transition-colors flex justify-between ${activeTab === 'leads' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-600 hover:bg-gray-100 font-medium'}`}>
+                <button onClick={() => { setActiveTab('leads'); setSidebarOpen(false); }} className={`w-full flex items-center px-4 py-2.5 rounded-md transition-colors flex justify-between ${activeTab === 'leads' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-600 hover:bg-gray-100 font-medium'}`}>
                     <div className="flex items-center"><Users className="w-5 h-5 mr-3" /> Leads Sheet</div>
-                    {metrics.leadsCount > 0 && <span className="bg-red-100 text-red-600 px-2 py-0.5 rounded-full text-xs">{metrics.leadsCount}</span>}
+                    {displayedMetrics.leadsCount > 0 && <span className="bg-red-100 text-red-600 px-2 py-0.5 rounded-full text-xs">{displayedMetrics.leadsCount}</span>}
                 </button>
-                <button onClick={() => setActiveTab('settings')} className={`w-full flex items-center px-4 py-2.5 rounded-md transition-colors ${activeTab === 'settings' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-600 hover:bg-gray-100 font-medium'}`}>
+                <button onClick={() => { setActiveTab('settings'); setSidebarOpen(false); }} className={`w-full flex items-center px-4 py-2.5 rounded-md transition-colors ${activeTab === 'settings' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-600 hover:bg-gray-100 font-medium'}`}>
                     <Settings className="w-5 h-5 mr-3" /> Store Settings
                 </button>
-                <button onClick={() => setActiveTab('redirects')} className={`w-full flex items-center px-4 py-2.5 rounded-md transition-colors ${activeTab === 'redirects' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-600 hover:bg-gray-100 font-medium'}`}>
+                <button onClick={() => { setActiveTab('redirects'); setSidebarOpen(false); }} className={`w-full flex items-center px-4 py-2.5 rounded-md transition-colors ${activeTab === 'redirects' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-600 hover:bg-gray-100 font-medium'}`}>
                     <LinkIcon className="w-5 h-5 mr-3" /> URL Redirects
                 </button>
             </nav>
@@ -327,12 +455,21 @@ export default function AdminDashboard() {
 
         {/* Main Content */}
         <main className="flex-1 flex flex-col overflow-hidden bg-gray-50/50">
-            <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-8 shadow-sm z-0">
-                <h1 className="text-xl font-bold text-gray-800 capitalize">{activeTab.replace('_', ' ')}</h1>
-                <div className="flex items-center space-x-4">
+            <header className="min-h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 sm:px-6 lg:px-8 py-3 shadow-sm z-0 gap-3">
+                <div className="flex items-center gap-3">
+                  <button
+                    className="lg:hidden p-2 rounded-md border border-gray-200 text-gray-700"
+                    onClick={() => setSidebarOpen(true)}
+                  >
+                    <Menu className="w-5 h-5" />
+                  </button>
+                  <h1 className="text-lg sm:text-xl font-bold text-gray-800 capitalize">{activeTab.replace('_', ' ')}</h1>
+                </div>
+                <div className="flex items-center space-x-2 sm:space-x-4">
                   <span className="flex items-center text-xs font-medium text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full"><span className="w-2 h-2 rounded-full bg-emerald-500 mr-2 animate-pulse"></span> Live Sync Active</span>
+                  {refreshing && <span className="text-xs text-gray-500">Refreshing...</span>}
                   <select 
-                      className="border border-gray-300 rounded-md px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium text-gray-700"
+                      className="border border-gray-300 rounded-md px-2 sm:px-3 py-1.5 text-xs sm:text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium text-gray-700"
                       value={selectedDateRange}
                       onChange={(e) => setSelectedDateRange(e.target.value)}
                   >
@@ -345,16 +482,16 @@ export default function AdminDashboard() {
                 </div>
             </header>
 
-            <div className="flex-1 overflow-auto p-8">
+            <div className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">
                 
                 {/* 1. DASHBOARD OVERVIEW */}
                 {activeTab === 'dashboard' && (
                     <div className="space-y-6 max-w-7xl mx-auto">
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                             <KpiCard title="Valid Visitors (KSA)" value={metrics.uniqueVisitors.toLocaleString()} icon={Users} />
-                            <KpiCard title="Total Orders" value={metrics.totalOrders.toLocaleString()} icon={ShoppingCart} />
+                            <KpiCard title="Total Orders" value={displayedMetrics.totalOrders.toLocaleString()} icon={ShoppingCart} />
                             <KpiCard title="Conversion Rate" value={`${metrics.conversionRate}%`} icon={Activity} />
-                            <KpiCard title="Total Revenue (SAR)" value={`SAR ${metrics.totalRevenue.toLocaleString()}`} icon={FileText} />
+                            <KpiCard title="Total Revenue (SAR)" value={`SAR ${displayedMetrics.totalRevenue.toLocaleString()}`} icon={FileText} />
                         </div>
 
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -362,7 +499,7 @@ export default function AdminDashboard() {
                               <h3 className="text-lg font-bold text-gray-800 mb-6">Traffic & Order Correlation</h3>
                               <div className="h-72">
                                   <ResponsiveContainer width="100%" height="100%">
-                                      <LineChart data={[{name: 'Start', visitors: 0, orders: 0}, {name: 'Now', visitors: metrics.uniqueVisitors, orders: metrics.totalOrders}]}>
+                                      <LineChart data={[{name: 'Start', visitors: 0, orders: 0}, {name: 'Now', visitors: metrics.uniqueVisitors, orders: displayedMetrics.totalOrders}]}>
                                           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
                                           <XAxis dataKey="name" stroke="#9ca3af" fontSize={12} tickLine={false} axisLine={false} />
                                           <YAxis stroke="#9ca3af" fontSize={12} tickLine={false} axisLine={false} />
@@ -376,7 +513,7 @@ export default function AdminDashboard() {
                           <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
                             <h3 className="text-lg font-bold text-gray-800 mb-4">Recent Leads</h3>
                             <div className="space-y-4">
-                              {leads.slice(0, 4).map(lead => (
+                              {filteredLeads.slice(0, 4).map(lead => (
                                 <div key={lead.id} className="flex justify-between items-center p-3 hover:bg-gray-50 rounded-md transition-colors border border-gray-100">
                                   <div>
                                     <p className="text-sm font-semibold text-gray-900">{lead.phone || 'Unknown'}</p>
@@ -385,7 +522,7 @@ export default function AdminDashboard() {
                                   <StatusBadge status={lead.status} />
                                 </div>
                               ))}
-                              {leads.length === 0 && <p className="text-sm text-gray-500 text-center py-4">No recent leads captured.</p>}
+                              {filteredLeads.length === 0 && <p className="text-sm text-gray-500 text-center py-4">No recent leads captured in selected range.</p>}
                             </div>
                             <button onClick={() => setActiveTab('leads')} className="w-full mt-4 py-2 text-sm font-medium text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-md transition-colors">
                               View All Leads
@@ -398,12 +535,21 @@ export default function AdminDashboard() {
                 {/* 2. PRODUCTS TAB (MICRO-FEATURES) */}
                 {activeTab === 'products' && (
                     <div className="space-y-6 max-w-7xl mx-auto">
-                      <div className="flex justify-between items-center mb-6">
+                      <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-6 gap-3">
                         <h2 className="text-xl font-bold text-gray-800">Product Management</h2>
-                        <span className="text-sm text-gray-500">Auto-syncs with storefront</span>
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="text"
+                            value={productSearch}
+                            onChange={(e) => setProductSearch(e.target.value)}
+                            placeholder="Search product by name or ID"
+                            className="w-full sm:w-72 border border-gray-300 rounded-md px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none"
+                          />
+                          <span className="text-sm text-gray-500 hidden sm:inline">Auto-syncs with storefront</span>
+                        </div>
                       </div>
                       <div className="grid grid-cols-1 gap-4">
-                        {products.map(product => (
+                        {visibleProducts.map(product => (
                           <div key={product.id} className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4 transition-all hover:shadow-md">
                             <div className="flex items-center gap-4 flex-1">
                               <img src={product.images[0]} alt={product.name} className="w-16 h-16 object-cover rounded-lg border border-gray-100 bg-gray-50" />
@@ -415,25 +561,27 @@ export default function AdminDashboard() {
                             
                             <div className="flex items-center gap-6 w-full md:w-auto justify-between md:justify-end">
                               {editingProduct === product.id ? (
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 flex-wrap">
                                   <input 
                                     type="number" 
-                                    id={`price-${product.id}`}
-                                    defaultValue={product.price}
+                                    value={productDrafts[product.id]?.price ?? product.price}
+                                    onChange={(e) => updateProductDraft(product.id, 'price', e.target.value)}
                                     className="w-24 px-2 py-1 border rounded text-sm"
                                   />
                                   <input 
                                     type="number" 
-                                    id={`stock-${product.id}`}
-                                    defaultValue={product.stock}
+                                    value={productDrafts[product.id]?.stock ?? product.stock}
+                                    onChange={(e) => updateProductDraft(product.id, 'stock', e.target.value)}
                                     className="w-20 px-2 py-1 border rounded text-sm"
                                   />
                                   <button onClick={() => {
-                                    const price = document.getElementById(`price-${product.id}`).value;
-                                    const stock = document.getElementById(`stock-${product.id}`).value;
-                                    saveProductUpdate(product.id, { price: Number(price), stock: Number(stock) });
+                                    const draft = productDrafts[product.id] || {};
+                                    saveProductUpdate(product.id, { price: Number(draft.price), stock: Number(draft.stock) });
                                   }} className="p-1.5 bg-emerald-100 text-emerald-700 rounded hover:bg-emerald-200">
                                     <Save className="w-4 h-4" />
+                                  </button>
+                                  <button onClick={() => setEditingProduct(null)} className="p-1.5 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 text-xs">
+                                    Cancel
                                   </button>
                                 </div>
                               ) : (
@@ -446,7 +594,7 @@ export default function AdminDashboard() {
                                     <p className="text-xs text-gray-500 font-medium">Stock</p>
                                     <p className={`font-bold ${product.stock < 20 ? 'text-red-600' : 'text-gray-900'}`}>{product.stock}</p>
                                   </div>
-                                  <button onClick={() => setEditingProduct(product.id)} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors">
+                                  <button onClick={() => startEditingProduct(product)} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors">
                                     <Edit2 className="w-4 h-4" />
                                   </button>
                                 </div>
@@ -461,6 +609,11 @@ export default function AdminDashboard() {
                             </div>
                           </div>
                         ))}
+                        {visibleProducts.length === 0 && (
+                          <div className="text-center py-10 text-gray-500 bg-white border border-gray-200 rounded-xl">
+                            No products match your search.
+                          </div>
+                        )}
                       </div>
                     </div>
                 )}
@@ -470,6 +623,11 @@ export default function AdminDashboard() {
                     <div className="space-y-6 max-w-7xl mx-auto">
                       <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
                           <h3 className="text-lg font-bold text-gray-800 mb-6">Top Visitor Paths</h3>
+                          {pathData.length === 0 ? (
+                            <div className="h-64 flex items-center justify-center text-sm text-gray-500">
+                              No analytics data yet.
+                            </div>
+                          ) : (
                           <div className="h-64">
                               <ResponsiveContainer width="100%" height="100%">
                                   <BarChart data={pathData} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
@@ -481,6 +639,7 @@ export default function AdminDashboard() {
                                   </BarChart>
                               </ResponsiveContainer>
                           </div>
+                          )}
                       </div>
                       <div className="bg-emerald-50 border border-emerald-100 rounded-lg p-6 flex items-center justify-between">
                         <div>
@@ -495,13 +654,32 @@ export default function AdminDashboard() {
                 {/* 4. LEADS SHEET */}
                 {activeTab === 'leads' && (
                     <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden max-w-7xl mx-auto">
-                        <div className="p-6 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
+                        <div className="p-6 border-b border-gray-200 bg-gray-50 flex flex-col gap-3 md:flex-row md:justify-between md:items-center">
                           <h2 className="text-lg font-bold text-gray-800">Abandoned Carts & Incomplete Orders</h2>
-                          <button onClick={() => exportToCSV(leads, 'leads')} className="text-sm bg-white border border-gray-300 px-4 py-2 rounded-md font-medium text-gray-700 hover:bg-gray-50 shadow-sm flex items-center gap-2">
-                            <Download className="w-4 h-4" /> Export to CSV
-                          </button>
+                          <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+                            <input
+                              type="text"
+                              value={leadSearch}
+                              onChange={(e) => setLeadSearch(e.target.value)}
+                              placeholder="Search by phone, status, or product"
+                              className="w-full sm:w-72 border border-gray-300 rounded-md px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none"
+                            />
+                            <select
+                              value={leadStatusFilter}
+                              onChange={(e) => setLeadStatusFilter(e.target.value)}
+                              className="border border-gray-300 rounded-md px-3 py-2 text-sm bg-white"
+                            >
+                              <option value="all">All statuses</option>
+                              <option value="Abandoned Cart">Abandoned Cart</option>
+                              <option value="Recovered">Recovered</option>
+                            </select>
+                            <button onClick={() => exportToCSV(visibleLeads, 'leads')} className="text-sm bg-white border border-gray-300 px-4 py-2 rounded-md font-medium text-gray-700 hover:bg-gray-50 shadow-sm flex items-center justify-center gap-2">
+                              <Download className="w-4 h-4" /> Export to CSV
+                            </button>
+                          </div>
                         </div>
-                        <table className="w-full text-left text-sm whitespace-nowrap">
+                        <div className="overflow-x-auto hidden md:block">
+                        <table className="w-full min-w-[720px] text-left text-sm whitespace-nowrap">
                             <thead className="bg-white border-b border-gray-200 text-gray-500">
                                 <tr>
                                     <th className="px-6 py-4 font-semibold">Lead ID / Date</th>
@@ -512,7 +690,7 @@ export default function AdminDashboard() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
-                                {leads.map((lead) => (
+                                {visibleLeads.map((lead) => (
                                     <tr key={lead.id} className="hover:bg-gray-50 transition-colors">
                                         <td className="px-6 py-4">
                                           <p className="font-mono text-xs text-gray-500">{lead.id}</p>
@@ -530,23 +708,63 @@ export default function AdminDashboard() {
                                         </td>
                                     </tr>
                                 ))}
-                                {leads.length === 0 && (
+                                {visibleLeads.length === 0 && (
                                   <tr><td colSpan="5" className="text-center py-12 text-gray-500 font-medium">No leads recorded yet.</td></tr>
                                 )}
                             </tbody>
                         </table>
+                        </div>
+                        <div className="md:hidden p-4 space-y-3">
+                          {visibleLeads.map((lead) => (
+                            <div key={lead.id} className="border border-gray-200 rounded-lg p-4 bg-white">
+                              <div className="flex justify-between items-start gap-2">
+                                <div>
+                                  <p className="text-xs font-mono text-gray-500">{lead.id}</p>
+                                  <p className="font-semibold text-gray-900">{lead.phone || 'N/A'}</p>
+                                </div>
+                                <StatusBadge status={lead.status} />
+                              </div>
+                              <p className="text-sm text-gray-600 mt-2">{lead.product_name || 'Browsing'}</p>
+                            </div>
+                          ))}
+                          {visibleLeads.length === 0 && <p className="text-sm text-center text-gray-500 py-6">No leads found.</p>}
+                        </div>
                     </div>
                 )}
 
                 {/* 5. ORDERS TABLE */}
                 {activeTab === 'orders' && (
                     <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden max-w-7xl mx-auto">
-                        <div className="p-4 border-b border-gray-200 flex justify-end bg-gray-50">
-                          <button onClick={() => exportToCSV(orders, 'orders')} className="text-sm bg-white border border-gray-300 px-4 py-2 rounded-md font-medium text-gray-700 hover:bg-gray-50 shadow-sm flex items-center gap-2">
+                        <div className="p-4 border-b border-gray-200 bg-gray-50 flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between">
+                          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                            <input
+                              type="text"
+                              value={orderSearch}
+                              onChange={(e) => setOrderSearch(e.target.value)}
+                              placeholder="Search by order, phone, customer..."
+                              className="w-full sm:w-72 border border-gray-300 rounded-md px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none"
+                            />
+                            <select
+                              value={orderStatusFilter}
+                              onChange={(e) => setOrderStatusFilter(e.target.value)}
+                              className="border border-gray-300 rounded-md px-3 py-2 text-sm bg-white"
+                            >
+                              <option value="all">All statuses</option>
+                              <option value="pending">Pending</option>
+                              <option value="Pending_Confirmation">Pending Confirmation</option>
+                              <option value="Confirmed">Confirmed</option>
+                              <option value="Dispatched_To_Codnetwork">Dispatched</option>
+                              <option value="In_Transit">In Transit</option>
+                              <option value="Delivered_Paid">Delivered</option>
+                              <option value="RTO">RTO</option>
+                            </select>
+                          </div>
+                          <button onClick={() => exportToCSV(visibleOrders, 'orders')} className="text-sm bg-white border border-gray-300 px-4 py-2 rounded-md font-medium text-gray-700 hover:bg-gray-50 shadow-sm flex items-center justify-center gap-2">
                             <Download className="w-4 h-4" /> Export to CSV
                           </button>
                         </div>
-                        <table className="w-full text-left text-sm whitespace-nowrap">
+                        <div className="overflow-x-auto hidden md:block">
+                        <table className="w-full min-w-[840px] text-left text-sm whitespace-nowrap">
                             <thead className="bg-gray-50 border-b border-gray-200 text-gray-600">
                                 <tr>
                                     <th className="px-6 py-4 font-semibold">Order ID</th>
@@ -558,7 +776,7 @@ export default function AdminDashboard() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
-                                {orders.map((order) => (
+                                {visibleOrders.map((order) => (
                                     <tr 
                                         key={order.id} 
                                         className="hover:bg-emerald-50/50 cursor-pointer transition-colors"
@@ -578,11 +796,32 @@ export default function AdminDashboard() {
                                         </td>
                                     </tr>
                                 ))}
-                                {orders.length === 0 && (
+                                {visibleOrders.length === 0 && (
                                   <tr><td colSpan="6" className="text-center py-12 text-gray-500 font-medium">No orders found.</td></tr>
                                 )}
                             </tbody>
                         </table>
+                        </div>
+                        <div className="md:hidden p-4 space-y-3">
+                          {visibleOrders.map((order) => (
+                            <button
+                              key={order.id}
+                              className="w-full text-left border border-gray-200 rounded-lg p-4 bg-white"
+                              onClick={() => setSelectedOrder(order)}
+                            >
+                              <div className="flex justify-between items-start gap-2">
+                                <div>
+                                  <p className="font-mono text-xs text-emerald-700">{order.id}</p>
+                                  <p className="font-semibold text-gray-900">{order.customer_name}</p>
+                                  <p className="text-xs text-gray-500">{order.phone}</p>
+                                </div>
+                                <StatusBadge status={order.status || 'Pending_Confirmation'} />
+                              </div>
+                              <p className="text-sm text-gray-600 mt-2">SAR {Number(order.total_price).toFixed(2)}</p>
+                            </button>
+                          ))}
+                          {visibleOrders.length === 0 && <p className="text-sm text-center text-gray-500 py-6">No orders found.</p>}
+                        </div>
                     </div>
                 )}
 
@@ -687,6 +926,15 @@ export default function AdminDashboard() {
                           </div>
                         </form>
 
+                        <div className="mb-4">
+                          <input
+                            type="text"
+                            value={redirectSearch}
+                            onChange={(e) => setRedirectSearch(e.target.value)}
+                            placeholder="Search redirects by source or destination"
+                            className="w-full md:w-96 border border-gray-300 rounded-md px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none"
+                          />
+                        </div>
                         <div className="overflow-x-auto">
                           <table className="w-full text-left text-sm">
                             <thead className="border-b border-gray-200 text-gray-500">
@@ -698,7 +946,7 @@ export default function AdminDashboard() {
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
-                              {redirects.map(redirect => (
+                              {visibleRedirects.map(redirect => (
                                 <tr key={redirect.id} className="hover:bg-gray-50 transition-colors">
                                   <td className="px-4 py-4 font-medium text-gray-900 font-mono text-xs">{redirect.from}</td>
                                   <td className="px-4 py-4 text-gray-600 truncate max-w-xs">{redirect.to}</td>
@@ -714,7 +962,7 @@ export default function AdminDashboard() {
                                   </td>
                                 </tr>
                               ))}
-                              {redirects.length === 0 && (
+                              {visibleRedirects.length === 0 && (
                                 <tr>
                                   <td colSpan="4" className="text-center py-8 text-gray-500">No redirects configured.</td>
                                 </tr>

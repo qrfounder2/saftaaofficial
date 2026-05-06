@@ -9,12 +9,14 @@ export default function AdminLogin() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
   const { toast } = useToast();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setErrorMessage('');
 
     try {
       const response = await fetch('/api/admin/login', {
@@ -30,20 +32,26 @@ export default function AdminLogin() {
         toast({
           title: "تم تسجيل الدخول بنجاح",
           description: "مرحباً بك في لوحة التحكم",
+          duration: 2500,
         });
         navigate('/mojourney/dashboard');
       } else {
+        const message = data.error || "بيانات الاعتماد غير صحيحة";
+        setErrorMessage(message);
         toast({
           title: "فشل تسجيل الدخول",
-          description: data.error || "بيانات الاعتماد غير صحيحة",
-          variant: "destructive"
+          description: message,
+          variant: "destructive",
+          duration: 3000,
         });
       }
     } catch (error) {
+      setErrorMessage("تعذر الاتصال بالخادم. تأكد أن السيرفر الخلفي يعمل على المنفذ 3001.");
       toast({
         title: "خطأ في الاتصال",
-        description: "يرجى المحاولة مرة أخرى لاحقاً",
-        variant: "destructive"
+        description: "تعذر الاتصال بالخادم. تأكد أن السيرفر الخلفي يعمل على المنفذ 3001.",
+        variant: "destructive",
+        duration: 3000,
       });
     } finally {
       setLoading(false);
@@ -91,6 +99,9 @@ export default function AdminLogin() {
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? "جاري التحقق..." : "تسجيل الدخول"}
           </Button>
+          {errorMessage && (
+            <p className="text-sm text-red-600 mt-2 text-center">{errorMessage}</p>
+          )}
         </form>
       </div>
     </div>

@@ -22,6 +22,12 @@ npm install
 npm run dev
 ```
 
+Or run frontend + backend together:
+
+```bash
+npm run dev:all
+```
+
 3. Build production assets:
 
 ```bash
@@ -50,6 +56,22 @@ The production server runs on `http://localhost:3000` by default.
 3. Expose port `3000`.
 4. Add persistent volume mounted to `/app/storage` (to preserve orders).
 5. Set domain and SSL in EasyPanel.
+
+### Required production environment variables
+
+Set these in EasyPanel before going live:
+
+- `JWT_SECRET` (strong random value)
+- `ADMIN_USERNAME`
+- `ADMIN_PASSWORD`
+- `PORT` (default is fine unless your EasyPanel setup requires a specific port)
+
+### Cloudflare notes for `saftaa.shop`
+
+- Point `A` record to your EasyPanel host IP.
+- Keep proxy enabled (orange cloud) once SSL works.
+- SSL/TLS mode: `Full (strict)` (recommended).
+- In EasyPanel, map your app domain to `saftaa.shop` and `www.saftaa.shop`.
 
 ### Option B: Node build/run commands
 
