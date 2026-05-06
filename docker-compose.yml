@@ -19,4 +19,7 @@ services:
     environment:
       - NODE_ENV=production
     volumes:
-      - ./storage:/app/storage
+      - storage_data:/app/storage
+
+volumes:
+  storage_data:
