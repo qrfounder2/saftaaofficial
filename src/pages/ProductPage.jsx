@@ -21,15 +21,15 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ProductPage() {
-  const { id } = useParams();
+  const { slug } = useParams();
   const navigate = useNavigate();
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedPack, setSelectedPack] = useState("3");
   const [packData, setPackData] = useState(null);
 
   const { data: product, isLoading } = useQuery({
-    queryKey: ["product", id],
-    queryFn: () => storeClient.entities.Product.filter({ id }),
+    queryKey: ["product", slug],
+    queryFn: () => storeClient.entities.Product.filter({ slug }),
     select: (data) => data[0],
   });
 
@@ -42,12 +42,12 @@ export default function ProductPage() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, [id]);
+  }, [slug]);
 
   const handleBuy = () => {
     const price = packData?.price || product?.price;
     const qty = packData?.id || "1";
-    navigate(`/order?product=${id}&pack=${qty}&price=${price}`);
+    navigate(`/order?product=${product?.id}&pack=${qty}&price=${price}`);
   };
 
   const scrollToCTA = () => {

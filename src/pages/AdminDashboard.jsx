@@ -555,7 +555,14 @@ export default function AdminDashboard() {
                               <img src={product.images[0]} alt={product.name} loading="lazy" decoding="async" className="w-16 h-16 object-cover rounded-lg border border-gray-100 bg-gray-50" />
                               <div>
                                 <h3 className="font-bold text-gray-900 text-sm md:text-base">{product.name}</h3>
-                                <p className="text-xs text-gray-500 font-mono mt-1">{product.id}</p>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <p className="text-xs text-gray-500 font-mono">{product.id}</p>
+                                  <span className="text-gray-300">|</span>
+                                  <a href={`https://saftaa.shop/product/${product.slug}`} target="_blank" rel="noreferrer" className="text-xs text-emerald-600 hover:text-emerald-700 font-mono flex items-center gap-1 group">
+                                    <LinkIcon className="w-3 h-3 group-hover:scale-110 transition-transform" />
+                                    saftaa.shop/product/{product.slug}
+                                  </a>
+                                </div>
                               </div>
                             </div>
                             

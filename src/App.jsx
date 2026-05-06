@@ -72,7 +72,7 @@ const AuthenticatedApp = () => {
         <Route element={<StoreLayout />}>
           <Route path="/" element={<Home />} />
           <Route path="/categories" element={<Categories />} />
-          <Route path="/product/:id" element={<ProductPage />} />
+          <Route path="/product/:slug" element={<ProductPage />} />
         </Route>
         <Route path="/order" element={<OrderForm />} />
         <Route path="/thank-you" element={<ThankYou />} />
