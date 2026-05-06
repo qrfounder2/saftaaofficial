@@ -59,26 +59,55 @@ export default function Navbar() {
 
   return (
     <>
-      {/* ── Announcement bar with countdown ── */}
-      <div className="bg-black text-white py-2 px-4 flex items-center justify-center gap-4 md:gap-8">
-        <span className="text-[10px] md:text-xs font-black tracking-widest uppercase">
-          عرض محدود
-        </span>
-        {/* Countdown */}
-        <div className="flex items-center gap-1 md:gap-2">
-          {[{ v: countdown.h, l: "سا" }, { v: countdown.m, l: "د" }, { v: countdown.s, l: "ث" }].map(({ v, l }, i) => (
-            <React.Fragment key={i}>
-              {i > 0 && <span className="text-white/40 font-black text-sm">:</span>}
-              <div className="flex flex-col items-center">
-                <span className="text-sm md:text-base font-black tabular-nums leading-none">{v}</span>
-                <span className="text-[8px] text-white/50 leading-none mt-0.5">{l}</span>
-              </div>
-            </React.Fragment>
-          ))}
+      {/* ── Announcement bar ── */}
+      <div className="bg-emerald-700 text-white" dir="rtl">
+        <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-center gap-3 md:gap-6 flex-wrap">
+
+          {/* Offer label */}
+          <span className="flex items-center gap-1.5 text-[11px] md:text-xs font-bold">
+            <svg className="w-3.5 h-3.5 text-yellow-300 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.562.562 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"/>
+            </svg>
+            خصم يصل إلى ٤٠٪ على جميع المنتجات
+          </span>
+
+          {/* Divider */}
+          <span className="hidden md:block text-white/30 text-sm select-none">|</span>
+
+          {/* Countdown boxes */}
+          <div className="flex items-center gap-1.5" dir="ltr">
+            {[
+              { v: countdown.h, l: "HRS" },
+              { v: countdown.m, l: "MIN" },
+              { v: countdown.s, l: "SEC" },
+            ].map(({ v, l }, i) => (
+              <React.Fragment key={i}>
+                {i > 0 && (
+                  <span className="text-white/50 font-black text-sm leading-none mb-2">:</span>
+                )}
+                <div className="flex flex-col items-center">
+                  <span className="bg-white/15 border border-white/20 rounded px-1.5 py-0.5 text-sm font-black tabular-nums leading-none min-w-[28px] text-center">
+                    {v}
+                  </span>
+                  <span className="text-[8px] text-white/60 font-bold mt-0.5 tracking-wider">{l}</span>
+                </div>
+              </React.Fragment>
+            ))}
+          </div>
+
+          {/* Divider */}
+          <span className="hidden md:block text-white/30 text-sm select-none">|</span>
+
+          {/* CTA link */}
+          <Link
+            to="/categories"
+            className="hidden md:inline-flex items-center gap-1 text-[11px] font-black underline underline-offset-2 hover:text-yellow-200 transition-colors"
+          >
+            اطلب الآن قبل انتهاء الكميات
+            <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+          </Link>
+
         </div>
-        <span className="hidden md:block text-[10px] font-bold tracking-wider text-white/60 uppercase">
-          ينتهي العرض قريباً
-        </span>
       </div>
 
       <nav
