@@ -50,6 +50,21 @@ export default function OrderForm() {
   const createOrder = useMutation({
     mutationFn: (orderData) => storeClient.entities.Order.create(orderData),
     onSuccess: (data) => {
+      // TikTok Pixel: CompletePayment
+      if (window.ttq) {
+        window.ttq.track('CompletePayment', {
+          contents: [{
+            content_id: product?.id,
+            content_name: product?.name,
+            price: totalPrice,
+            quantity: parseInt(pack) || 1
+          }],
+          content_type: 'product',
+          value: totalPrice,
+          currency: 'SAR',
+          event_id: data.id // Deduplication
+        });
+      }
       navigate(`/thank-you?order=${data.id}&name=${encodeURIComponent(formData.name)}`);
     },
   });

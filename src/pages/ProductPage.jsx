@@ -44,9 +44,42 @@ export default function ProductPage() {
     window.scrollTo(0, 0);
   }, [slug]);
 
+  // TikTok Pixel: ViewContent
+  useEffect(() => {
+    if (product && window.ttq) {
+      window.ttq.track('ViewContent', {
+        contents: [{
+          content_id: product.id,
+          content_name: product.name,
+          price: product.price,
+          quantity: 1
+        }],
+        content_type: 'product',
+        value: product.price,
+        currency: 'SAR'
+      });
+    }
+  }, [product]);
+
   const handleBuy = () => {
     const price = packData?.price || product?.price;
     const qty = packData?.id || "1";
+
+    // TikTok Pixel: AddToCart
+    if (window.ttq) {
+      window.ttq.track('AddToCart', {
+        contents: [{
+          content_id: product?.id,
+          content_name: product?.name,
+          price: price,
+          quantity: parseInt(qty) || 1
+        }],
+        content_type: 'product',
+        value: price,
+        currency: 'SAR'
+      });
+    }
+
     navigate(`/order?product=${product?.id}&pack=${qty}&price=${price}`);
   };
 
