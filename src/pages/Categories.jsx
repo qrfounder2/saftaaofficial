@@ -7,6 +7,9 @@ import { Filter } from "lucide-react";
 
 const categoryOptions = [
   { value: "all", label: "الكل" },
+  { value: "medication", label: "العناية والمسكنات" },
+  { value: "wellness", label: "العافية والدعم" },
+  { value: "lifestyle", label: "أدوات وترند" },
   { value: "back", label: "آلام الظهر" },
   { value: "knee", label: "آلام الركبة" },
   { value: "sciatica", label: "عرق النسا" },
