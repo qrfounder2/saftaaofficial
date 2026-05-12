@@ -11,7 +11,7 @@ export const ROUTES = {
 export const CHECKOUT_FEATURED_WAIST = `/order?${new URLSearchParams({
   product: "47182",
   pack: "1",
-  price: "330",
+  price: "194",
   qty: "1",
   size: "M",
   colorLabel: "Natural",
