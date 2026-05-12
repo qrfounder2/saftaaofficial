@@ -33,20 +33,54 @@ const faqs = [
   },
 ];
 
-export default function FAQ() {
+const lifestyleFaqs = [
+  {
+    q: "هل غاز البيوتان يجي مع الطلب؟",
+    a: "غالباً لا — بسبب أنظمة الشحن والسلامة. المشعل يصل جاهز للتعبئة من محل غاز/مشاعل موثوق داخل السعودية (نفس فكرة مشاعل الجيت المعروفة). نرسل لك تعليمات التعبئة بخطوات واضحة بعد الطلب.",
+  },
+  {
+    q: "وش الفرق بينه وبين مشعل السوبرماركت؟",
+    a: "فرق الإحساس: جيت مركّز يعطيك لهب أقوى وأوضح في الكاميرا، وتصميم بلانيت يبان «غالي» حتى لو السعر منافس. مو للمقارنة مع دواء — هذا أداة استخدام مسؤول.",
+  },
+  {
+    q: "ينفع للبرّ والشواء والشموع؟",
+    a: "نعم — هذا بالضبط سيناريوهات العملاء الأكثر شيوعاً في السعودية: تجهيز شواء سريع، شمعة، موقف برّ، أو طوارئ بسيطة. تجنب الاستخدام الخطر أو قرب أطفال.",
+  },
+  {
+    q: "كم ياخذ التوصيل؟ والدفع؟",
+    a: "١–٣ أيام عمل لمعظم المدن. الدفع عند الاستلام: تفحص التغليف وتتأكد قبل ما تدفع — عشان تبني ثقة زيادة.",
+  },
+  {
+    q: "هل فيه ضمان أو استرجاع؟",
+    a: "نعم — ضمان رضا خلال ٣٠ يوم وفق سياسة المتجر (شروط بسيطة للحفاظ على سلامة المنتج). إذا وصلك شي غير المتوقع، تواصلنا ونرتب لك الحل بسرعة.",
+  },
+  {
+    q: "ليه الناس تطلب ٣ قطع أكثر من وحدة؟",
+    a: "لأن التيك توك يبيع «الهدية»: وحدة لك، وحدة لأخوك، وحدة احتياط — والعرض الثلاثي يطلع أوفر للقطعة ويقلل شحن/مخاطرة «تخلص الكمية».",
+  },
+];
+
+export default function FAQ({ variant = "health" }) {
+  const list = variant === "lifestyle" ? lifestyleFaqs : faqs;
+  const isLifestyle = variant === "lifestyle";
+
   return (
     <section className="py-12 md:py-16 bg-secondary/30">
       <div className="max-w-3xl mx-auto px-4">
         <div className="text-center mb-10">
           <span className="text-xs font-bold text-primary bg-primary/10 px-4 py-1.5 rounded-full">
-            ❓ أسئلة شائعة
+            أسئلة سريعة
           </span>
-          <h2 className="text-2xl md:text-4xl font-black mt-4">عندك سؤال؟</h2>
-          <p className="text-muted-foreground mt-2 text-sm">إجابات على أكثر الأسئلة شيوعاً</p>
+          <h2 className="text-2xl md:text-4xl font-black mt-4">
+            {isLifestyle ? "قبل ما تضغط «اطلب» — اقرأ هذي" : "عندك سؤال؟"}
+          </h2>
+          <p className="text-muted-foreground mt-2 text-sm">
+            {isLifestyle ? "إجابات مباشرة بدون لفّ — عشان ما يجيك طلب وانت غير جاهز" : "إجابات على أكثر الأسئلة شيوعاً"}
+          </p>
         </div>
 
         <Accordion type="single" collapsible className="space-y-2">
-          {faqs.map((faq, i) => (
+          {list.map((faq, i) => (
             <AccordionItem
               key={i}
               value={`item-${i}`}

@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { storeClient } from "@/api/storeClient";
-import ProductCard from "../components/store/ProductCard";
+import ProductCard from "@/components/metroooo/ProductCard";
+import { toMetroCardProduct } from "@/lib/metroProductAdapter";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Filter } from "lucide-react";
 
@@ -33,35 +34,25 @@ export default function Categories() {
     ? products
     : products.filter((p) => p.category === activeCategory);
 
-  return (
-    <div className="min-h-screen">
-      {/* Header */}
-      <div className="bg-emerald-900 text-white py-10 md:py-16 relative overflow-hidden">
-        {/* Subtle grid pattern for medical look */}
-        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "radial-gradient(#ffffff 1px, transparent 1px)", backgroundSize: "20px 20px" }}></div>
-        <div className="max-w-7xl mx-auto px-4 text-center relative z-10">
-          <span className="inline-block bg-emerald-800 text-emerald-100 px-3 py-1 rounded-full text-xs font-bold mb-4 border border-emerald-700/50">
-            الوكيل الحصري والموزع المعتمد 🇸🇦
-          </span>
-          <h1 className="text-3xl md:text-5xl font-black mb-3">الحلول الطبية المتكاملة</h1>
-          <p className="text-emerald-100 text-sm max-w-lg mx-auto">
-            نوفر لك خيارات علاجية موثوقة ومصرحة، مطابقة لاعتمادات هيئة الغذاء والدواء السعودية (SFDA) مع ضمان الفعالية والأمان.
-          </p>
-        </div>
-      </div>
+  const cards = useMemo(() => filtered.map(toMetroCardProduct), [filtered]);
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Category Filters */}
+  return (
+    <div className="min-h-screen bg-white overflow-x-hidden">
+      <main className="layout-wide section-stack">
+        <h1 className="heading-section">المنتجات</h1>
+        <div className="heading-rule" />
+
         <div className="flex items-center gap-2 mb-8 overflow-x-auto pb-2 scrollbar-hide">
-          <Filter className="w-4 h-4 text-muted-foreground shrink-0" />
+          <Filter className="w-4 h-4 text-gray-400 shrink-0" />
           {categoryOptions.map((cat) => (
             <button
               key={cat.value}
+              type="button"
               onClick={() => setActiveCategory(cat.value)}
-              className={`whitespace-nowrap px-4 py-2 rounded-full text-xs font-bold transition-all ${
+              className={`whitespace-nowrap px-4 py-2 rounded-full text-xs font-black border transition-all ${
                 activeCategory === cat.value
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-secondary text-foreground hover:bg-secondary/80"
+                  ? "bg-black text-white border-black"
+                  : "bg-white text-black border-gray-200 hover:border-black"
               }`}
             >
               {cat.label}
@@ -69,33 +60,28 @@ export default function Categories() {
           ))}
         </div>
 
-        {/* Products Grid */}
         {isLoading ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {[1,2,3,4,5,6].map((i) => (
-              <div key={i} className="bg-card rounded-2xl overflow-hidden">
-                <Skeleton className="aspect-square" />
-                <div className="p-4 space-y-2">
-                  <Skeleton className="h-4 w-3/4" />
-                  <Skeleton className="h-3 w-1/2" />
-                  <Skeleton className="h-6 w-1/3" />
-                </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 lg:gap-5">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="space-y-2">
+                <Skeleton className="aspect-[3/4] rounded-2xl" />
+                <Skeleton className="h-4 w-3/4" />
               </div>
             ))}
           </div>
-        ) : filtered.length > 0 ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {filtered.map((product, i) => (
-              <ProductCard key={product.id} product={product} index={i} />
+        ) : cards.length > 0 ? (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 lg:gap-5">
+            {cards.map((product) => (
+              <ProductCard key={product.link} product={product} />
             ))}
           </div>
         ) : (
           <div className="text-center py-20">
             <span className="text-4xl mb-4 block">📦</span>
-            <p className="text-muted-foreground">لا توجد منتجات في هذا التصنيف حالياً</p>
+            <p className="text-gray-500 font-medium">لا توجد منتجات في هذا التصنيف حالياً</p>
           </div>
         )}
-      </div>
+      </main>
     </div>
   );
 }

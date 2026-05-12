@@ -1,467 +1,205 @@
-import React, { useState, useEffect } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import React, { useMemo, useState } from "react";
+import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { Star } from "lucide-react";
 import { storeClient } from "@/api/storeClient";
-import { motion } from "framer-motion";
-import {
-  Shield, Truck, ChevronLeft, Check, Package,
-  ArrowLeft
-} from "lucide-react";
-import QuantitySelector from "../components/store/QuantitySelector";
-import StickyBuyBar from "../components/store/StickyBuyBar";
-import Testimonials from "../components/store/Testimonials";
-import FAQ from "../components/store/FAQ";
-import ProductCard from "../components/store/ProductCard";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { normalizeProductImages, toShapeCardProduct, toShapePdpProduct } from "@/lib/shapeProductAdapter";
+import { toMetroCardProduct } from "@/lib/metroProductAdapter";
+import ProductGallery from "@/components/metroooo/ProductGallery";
+import ProductOptions from "@/components/metroooo/ProductOptions";
+import PaymentMethods from "@/components/metroooo/PaymentMethods";
+import TrustBadges from "@/components/metroooo/TrustBadges";
+import ProductFeatures from "@/components/metroooo/ProductFeatures";
+import ReviewsSection from "@/components/metroooo/ReviewsSection";
+import RecommendedProducts from "@/components/metroooo/RecommendedProducts";
+import GuideBanner from "@/components/metroooo/GuideBanner";
+import FeatureIcons from "@/components/metroooo/FeatureIcons";
+import StoreBadge from "@/components/launchMetro/StoreBadge";
 import { Skeleton } from "@/components/ui/skeleton";
+
+function galleryUrls(p) {
+  const base = normalizeProductImages(p);
+  const extra = Array.isArray(p?.metro_ui?.story_images) ? p.metro_ui.story_images : [];
+  const seen = new Set(base);
+  const out = [...base];
+  for (const u of extra) {
+    const s = String(u).trim();
+    if (!s || seen.has(s)) continue;
+    seen.add(s);
+    out.push(s);
+  }
+  return out;
+}
 
 export default function ProductPage() {
   const { slug } = useParams();
-  const navigate = useNavigate();
-  const [selectedImage, setSelectedImage] = useState(0);
-  const [selectedPack, setSelectedPack] = useState(null);
-  const [packData, setPackData] = useState(null);
-  const [packError, setPackError] = useState(false);
+  const [selectedSize, setSelectedSize] = useState("M");
+  const [selectedColor, setSelectedColor] = useState("");
+  const [quantity, setQuantity] = useState(1);
 
-  const { data: product, isLoading } = useQuery({
-    queryKey: ["product", slug],
-    queryFn: () => storeClient.entities.Product.filter({ slug }),
-    select: (data) => data[0],
+  const { data: rawProducts = [], isLoading } = useQuery({
+    queryKey: ["products"],
+    queryFn: () => storeClient.entities.Product.filter({ is_active: true }, "-created_date", 80),
   });
 
-  const { data: relatedProducts } = useQuery({
-    queryKey: ["related-products", product?.category],
-    queryFn: () => storeClient.entities.Product.filter({ category: product?.category, is_active: true }),
-    enabled: !!product?.category,
-    initialData: [],
-  });
+  const product = useMemo(
+    () => rawProducts.find((p) => p.slug === slug || p.id === slug),
+    [rawProducts, slug],
+  );
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [slug]);
+  const pdp = useMemo(() => (product ? toShapePdpProduct(product) : null), [product]);
+  const card = useMemo(() => (product ? toShapeCardProduct(product) : null), [product]);
 
-  // TikTok Pixel: ViewContent
-  useEffect(() => {
-    if (product && window.ttq) {
-      window.ttq.track('ViewContent', {
-        contents: [{
-          content_id: product.id,
-          content_name: product.name,
-          price: product.price,
-          quantity: 1
-        }],
-        content_type: 'product',
-        value: product.price,
-        currency: 'SAR'
-      });
+  const colorOptions = useMemo(() => {
+    const mu = product?.metro_ui;
+    if (mu?.colors?.length) {
+      return mu.colors.map((c) => ({
+        name: c.id,
+        label_ar: c.label,
+        value: c.swatch,
+        border: c.swatch || "#333",
+      }));
     }
+    return undefined;
   }, [product]);
 
-  const handleBuy = () => {
-    if (!selectedPack || !packData) {
-      setPackError(true);
-      scrollToCTA();
-      return;
-    }
-    setPackError(false);
-
-    const price = packData.price || product?.price;
-    const qty = packData.id || "1";
-
-    // TikTok Pixel: AddToCart
-    if (window.ttq) {
-      window.ttq.track('AddToCart', {
-        contents: [{
-          content_id: product?.id,
-          content_name: product?.name,
-          price: price,
-          quantity: parseInt(qty) || 1
-        }],
-        content_type: 'product',
-        value: price,
-        currency: 'SAR'
+  React.useEffect(() => {
+    if (colorOptions?.length) {
+      setSelectedColor((prev) => {
+        if (prev && colorOptions.some((c) => c.name === prev)) return prev;
+        return colorOptions[0].name;
       });
     }
+  }, [colorOptions]);
 
-    // Give pixel a tiny moment to fire before unmounting
-    setTimeout(() => {
-      navigate(`/order?product=${product?.id}&pack=${qty}&price=${price}`);
-    }, 150);
-  };
+  const recommended = useMemo(() => {
+    if (!product) return [];
+    return rawProducts
+      .filter((p) => p.id !== product.id && p.is_active)
+      .slice(0, 4)
+      .map(toMetroCardProduct);
+  }, [rawProducts, product]);
 
-  const scrollToCTA = () => {
-    const element = document.getElementById('cta-section');
-    if (element) {
-      const y = element.getBoundingClientRect().top + window.scrollY - 100;
-      window.scrollTo({ top: y, behavior: 'smooth' });
-    }
-  };
-
-  if (isLoading) {
+  if (!isLoading && !product) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid md:grid-cols-2 gap-8">
-          <Skeleton className="aspect-square rounded-2xl" />
-          <div className="space-y-4">
-            <Skeleton className="h-8 w-3/4" />
-            <Skeleton className="h-4 w-1/2" />
-            <Skeleton className="h-12 w-1/3" />
-            <Skeleton className="h-40 w-full" />
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!product) {
-    return (
-      <div className="text-center py-20">
-        <p className="text-muted-foreground">المنتج غير موجود</p>
-        <Link to="/categories" className="text-primary underline text-sm mt-2 block">
-          العودة للمنتجات
+      <div className="layout-narrow py-16 text-center space-y-4">
+        <p className="text-lg font-bold">المنتج غير موجود</p>
+        <Link to="/" className="text-black font-black underline">
+          العودة للرئيسية
         </Link>
       </div>
     );
   }
 
-  const images = product.images?.length > 0 ? product.images : ["/images/products/product-default.webp"];
-  const discount = product.compare_price
-    ? Math.round(((product.compare_price - product.price) / product.compare_price) * 100)
-    : 0;
+  if (isLoading || !product || !pdp || !card) {
+    return (
+      <div className="layout-narrow py-6 space-y-4">
+        <Skeleton className="h-8 w-40" />
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="aspect-square w-full rounded-2xl" />
+        <Skeleton className="h-48 w-full rounded-2xl" />
+      </div>
+    );
+  }
+
+  const images = galleryUrls(product);
+  const sizes = pdp.sizes?.length ? pdp.sizes : undefined;
+  const unitPrice = Number(product.price) || 0;
+  const comparePrice = product.compare_price != null ? Number(product.compare_price) : null;
+  const metroReviews = product.metro_ui?.reviews;
+  const reviewCount = product.reviews_count ?? card.review_count ?? 0;
+  const isBundle = !!product.metro_ui?.bundle;
+  const titleSlug =
+    isBundle ? "مجموعة" : String(product.name || "").split(" ").slice(0, 3).join(" ");
+  const showFreeShipping = card.free_shipping !== false;
 
   return (
-    <>
-      <div className="max-w-7xl mx-auto px-4 py-4">
-        {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-xs text-muted-foreground mb-4">
-          <Link to="/" className="hover:text-foreground">الرئيسية</Link>
-          <ChevronLeft className="w-3 h-3" />
-          <Link to="/categories" className="hover:text-foreground">المنتجات</Link>
-          <ChevronLeft className="w-3 h-3" />
-          <span className="text-foreground font-medium line-clamp-1">{product.name}</span>
-        </nav>
+    <div className="min-h-screen bg-white pb-20 sm:pb-24 overflow-x-hidden">
+      <main className="layout-narrow pt-1 overflow-x-hidden">
+        <p className="text-xs text-gray-400 font-medium py-3">
+          <Link to="/" className="hover:text-black">
+            الرئيسية
+          </Link>
+          {" "}
+          &rsaquo;{" "}
+          <Link to="/collections/best-sellers" className="hover:text-black">
+            الأفضل مبيعاً
+          </Link>
+          {" "}
+          &rsaquo; <span className="text-black font-bold">{titleSlug}</span>
+        </p>
 
-        <div className="grid md:grid-cols-2 gap-8 md:gap-12">
-          {/* Images */}
-          <div>
-            <motion.div
-              key={selectedImage}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="relative aspect-square rounded-2xl overflow-hidden bg-secondary mb-3"
-            >
-              <div className="absolute inset-0 bg-gray-100 animate-pulse" aria-hidden="true" />
-              <img
-                src={images[selectedImage]}
-                alt={product.name}
-                fetchpriority="high"
-                decoding="async"
-                onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/images/products/product-default.svg"; }}
-                className="relative w-full h-full object-cover"
-              />
-            </motion.div>
-            {images.length > 1 && (
-              <div className="flex gap-2 overflow-x-auto pb-2">
-                {images.map((img, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setSelectedImage(i)}
-                    className={`w-16 h-16 rounded-xl overflow-hidden border-2 shrink-0 transition-all ${
-                      i === selectedImage ? "border-primary" : "border-border"
-                    }`}
-                  >
-                    <img src={img} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" />
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Product Info */}
-          <div>
-            {product.badge && (
-              <span className="inline-block bg-destructive/10 text-destructive text-xs font-bold px-3 py-1 rounded-full mb-3">
-                {product.badge}
-              </span>
-            )}
-
-            <h1 className="text-2xl md:text-3xl font-black mb-2">{product.name}</h1>
-
-            {/* Doctor Recommended Micro-feature */}
-            <div className="flex items-center gap-1.5 mb-3 flex-wrap">
-              <span className="flex items-center gap-1 text-[10px] md:text-xs font-bold text-blue-700 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-sm">
-                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
-                ينصح به الأطباء والصيادلة
-              </span>
-              <span className="flex items-center gap-1 text-[10px] md:text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-sm">
-                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                مرخص من هيئة الغذاء والدواء
-              </span>
-            </div>
-
-            {/* Official KSA Distributor */}
-            <div className="my-4 bg-gray-50 border border-gray-200 rounded-xl p-3 flex gap-3 items-center">
-              <Shield className="w-5 h-5 text-gray-600 shrink-0" />
-              <div>
-                <h3 className="text-xs font-bold text-gray-900">الوكيل الحصري في السعودية 🇸🇦</h3>
-                <p className="text-[10px] text-gray-600 mt-0.5 leading-relaxed">
-                  جميع منتجاتنا أصلية 100٪ ومصرحة من الجهات المختصة.
-                </p>
-              </div>
-            </div>
-
-            {/* Rating - Amazon Style */}
-            <div className="flex items-center gap-2 mb-4">
-              <div className="flex drop-shadow-sm">
-                {[1,2,3,4,5].map((s) => (
-                  <svg 
-                    key={s} 
-                    className={`w-4 h-4 ${s <= (product.rating || 5) ? "text-[#FFA41C] fill-[#FFA41C]" : "text-gray-300 fill-gray-300"}`}
-                    viewBox="0 0 20 20"
-                  >
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                  </svg>
-                ))}
-              </div>
-              <span className="text-sm text-[#007185] hover:text-[#C45500] cursor-pointer transition-colors border-b border-transparent hover:border-[#C45500]">
-                {product.reviews_count?.toLocaleString() || 0} تقييم
-              </span>
-              <span className="mx-1 text-border">|</span>
-              <span className="flex items-center gap-1 text-xs text-[#007185] font-medium bg-[#007185]/5 px-2 py-0.5 rounded-sm border border-[#007185]/20">
-                <svg className="w-3.5 h-3.5 text-[#007185]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                مشتريات موثّقة
-              </span>
-            </div>
-
-            {/* Price */}
-            <div className="flex items-baseline gap-3 mb-2">
-              <span className="text-3xl font-black text-black">{product.price} ر.س</span>
-              {product.compare_price && (
-                <>
-                  <span className="text-lg text-gray-400 line-through">{product.compare_price} ر.س</span>
-                  <span className="bg-red-50 text-red-600 border border-red-100 text-xs font-bold px-2.5 py-0.5 rounded-full shadow-sm">
-                    -{discount}٪
-                  </span>
-                </>
-              )}
-            </div>
-
-            <p className="text-xs text-muted-foreground mb-4">شامل الضريبة</p>
-
-            {/* Native Salla-style Purchase Indicator */}
-            <div className="flex items-center gap-2 mb-6 px-3 py-2 bg-slate-50 border border-slate-100/80 rounded-md w-fit">
-              <svg className="w-4 h-4 text-orange-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 2.5z"></path>
-              </svg>
-              <p className="text-[11px] text-slate-600 font-medium leading-none mt-0.5">
-                تم شراء هذا المنتج <strong className="text-slate-800 font-bold px-0.5">أكثر من ٥٠ مرة</strong> خلال الساعات الماضية
-              </p>
-            </div>
-
-            {/* Short description */}
-            {product.short_description && (
-              <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
-                {product.short_description}
-              </p>
-            )}
-
-            {/* Delivery info mini */}
-            <div className="grid grid-cols-3 gap-2 mb-6">
-              <div className="text-center p-3 rounded-xl bg-secondary/50">
-                <Truck className="w-5 h-5 mx-auto mb-1 text-primary" />
-                <p className="text-[10px] font-bold">توصيل سريع</p>
-                <p className="text-[9px] text-muted-foreground">١-٣ أيام عمل</p>
-              </div>
-              <div className="text-center p-3 rounded-xl bg-secondary/50">
-                <Shield className="w-5 h-5 mx-auto mb-1 text-primary" />
-                <p className="text-[10px] font-bold">ضمان ٣٠ يوم</p>
-                <p className="text-[9px] text-muted-foreground">استرجاع كامل</p>
-              </div>
-              <div className="text-center p-3 rounded-xl bg-secondary/50">
-                <Package className="w-5 h-5 mx-auto mb-1 text-primary" />
-                <p className="text-[10px] font-bold">دفع عند الاستلام</p>
-                <p className="text-[9px] text-muted-foreground">بدون مخاطر</p>
-              </div>
-            </div>
-
-            {/* Premium Minimalist CTA Section */}
-            <div id="cta-section" className={`mb-6 bg-gray-100 border rounded-2xl p-5 md:p-6 transition-all duration-300 ${packError ? 'border-red-500 ring-2 ring-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.1)]' : 'border-gray-200'}`}>
-              <div className="flex flex-col mb-5">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-base md:text-lg font-bold text-gray-900">اختر العرض المناسب لك لإتمام الطلب:</h3>
-                </div>
-                {packError && (
-                  <motion.p 
-                    initial={{ opacity: 0, y: -5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="text-xs md:text-sm text-red-600 font-bold mt-2.5 flex items-center gap-1.5 bg-red-50 w-fit px-3 py-1.5 rounded-md border border-red-100"
-                  >
-                    <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-                    الرجاء اختيار أحد العروض للمتابعة
-                  </motion.p>
-                )}
-              </div>
-              
-              <QuantitySelector
-                product={product}
-                selected={selectedPack}
-                onSelect={(pack) => {
-                  setSelectedPack(pack.id);
-                  setPackData(pack);
-                  setPackError(false);
-                }}
-              />
-
-              <button
-                onClick={handleBuy}
-                className="w-full mt-6 bg-zinc-900 text-white py-4 rounded-xl font-bold text-lg hover:bg-zinc-800 transition-colors flex items-center justify-center gap-2"
-              >
-                إتمام الطلب
-                <ArrowLeft className="w-5 h-5" />
-              </button>
-
-              <div className="mt-5 pt-5 border-t border-gray-200/60">
-                <div className="flex flex-col gap-3">
-                  <div className="flex items-center justify-center gap-6 text-xs font-medium text-gray-600">
-                    <span className="flex items-center gap-1.5">
-                      <Shield className="w-4 h-4 text-gray-400" /> ضمان الجودة
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                      <Package className="w-4 h-4 text-gray-400" /> الدفع عند الاستلام
-                    </span>
-                  </div>
-                  <p className="text-center text-[11px] text-gray-500">
-                    تسوق آمن ١٠٠٪. لا تدفع أي مبلغ حتى تستلم المنتج وتعاينه بنفسك.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Native Stock Inventory Widget */}
-            {product.stock && product.stock < 50 && (
-              <div className="mt-4 mb-2">
-                <div className="flex items-center gap-2 mb-1.5 px-1">
-                  <div className="w-1.5 h-1.5 rounded-full bg-amber-500"></div>
-                  <p className="text-[11px] font-bold text-slate-500 tracking-wide">تحديث المستودع المباشر</p>
-                </div>
-                <div className="bg-white border border-slate-200 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] rounded-xl p-3.5">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center border border-amber-100/50">
-                        <Package className="w-4 h-4 text-amber-600" />
-                      </div>
-                      <div>
-                        <p className="text-[12px] font-bold text-slate-800">الكمية المتبقية محدودة</p>
-                        <p className="text-[10px] text-slate-500 mt-0.5">مستودع الرياض المركزي</p>
-                      </div>
-                    </div>
-                    <div className="text-center bg-slate-50 border border-slate-100 px-3 py-1.5 rounded-lg shadow-inner">
-                      <p className="text-[14px] font-black text-amber-600 leading-none">{product.stock}</p>
-                      <p className="text-[9px] font-bold text-slate-400 mt-1">قطعة فقط</p>
-                    </div>
-                  </div>
-                  
-                  <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden mb-2">
-                    <motion.div 
-                      initial={{ width: 0 }}
-                      animate={{ width: `${Math.max(10, Math.min((product.stock / 50) * 100, 100))}%` }}
-                      transition={{ duration: 1.2, ease: "easeOut" }}
-                      className="bg-amber-400 h-full rounded-full" 
-                    />
-                  </div>
-                  <div className="flex items-center justify-between text-[9px] font-medium text-slate-400 mt-1">
-                    <span className="flex items-center gap-1">
-                      <svg className="w-2.5 h-2.5 animate-spin-slow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
-                      مزامنة تلقائية
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <svg className="w-3 h-3 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                      مخزون موثّق
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Product Details Accordion */}
-            <Accordion type="single" collapsible className="mt-6">
-              {product.description && (
-                <AccordionItem value="desc" className="border-b-0 bg-secondary/30 rounded-xl px-4 mb-2">
-                  <AccordionTrigger className="text-sm font-bold hover:no-underline py-3">
-                    وصف المنتج
-                  </AccordionTrigger>
-                  <AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-4">
-                    {product.description}
-                  </AccordionContent>
-                </AccordionItem>
-              )}
-              {product.benefits?.length > 0 && (
-                <AccordionItem value="benefits" className="border-b-0 bg-secondary/30 rounded-xl px-4 mb-2">
-                  <AccordionTrigger className="text-sm font-bold hover:no-underline py-3">
-                    الفوائد
-                  </AccordionTrigger>
-                  <AccordionContent className="pb-4">
-                    <ul className="space-y-2">
-                      {product.benefits.map((b, i) => (
-                        <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
-                          <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                          {b}
-                        </li>
-                      ))}
-                    </ul>
-                  </AccordionContent>
-                </AccordionItem>
-              )}
-              {product.how_to_use && (
-                <AccordionItem value="usage" className="border-b-0 bg-secondary/30 rounded-xl px-4 mb-2">
-                  <AccordionTrigger className="text-sm font-bold hover:no-underline py-3">
-                    طريقة الاستخدام
-                  </AccordionTrigger>
-                  <AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-4">
-                    {product.how_to_use}
-                  </AccordionContent>
-                </AccordionItem>
-              )}
-              {product.ingredients && (
-                <AccordionItem value="ingredients" className="border-b-0 bg-secondary/30 rounded-xl px-4">
-                  <AccordionTrigger className="text-sm font-bold hover:no-underline py-3">
-                    المكونات
-                  </AccordionTrigger>
-                  <AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-4">
-                    {product.ingredients}
-                  </AccordionContent>
-                </AccordionItem>
-              )}
-            </Accordion>
-          </div>
+        <div className="flex items-center gap-2 mb-2 flex-wrap">
+          {card.badge === "bestseller" && (
+            <span className="bg-pink-100 text-pink-800 text-xs font-black px-3 py-1 rounded-full">
+              الأكثر مبيعاً
+            </span>
+          )}
+          {isBundle && (
+            <span className="bg-emerald-100 text-emerald-900 text-xs font-black px-3 py-1 rounded-full">
+              مجموعة توفير
+            </span>
+          )}
+          {product.is_featured && card.badge !== "bestseller" && !isBundle && (
+            <span className="bg-pink-100 text-pink-800 text-xs font-black px-3 py-1 rounded-full">
+              مميز
+            </span>
+          )}
         </div>
 
-        {/* Related Products */}
-        {relatedProducts.filter(p => p.id !== product.id).length > 0 && (
-          <section className="mt-16 mb-8">
-            <h2 className="text-xl md:text-2xl font-black mb-6">منتجات قد تعجبك</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {relatedProducts.filter(p => p.id !== product.id).slice(0, 4).map((p, i) => (
-                <ProductCard key={p.id} product={p} index={i} />
-              ))}
+        <div className="flex items-center gap-3 mb-3 flex-wrap">
+          {reviewCount > 0 && (
+            <div className="flex items-center gap-1">
+              <div className="flex gap-0.5">
+                {[...Array(5)].map((_, i) => (
+                  <Star
+                    key={i}
+                    className={`w-4 h-4 ${i < Math.round(Number(product.rating) || 5) ? "fill-yellow-400 text-yellow-400" : "text-gray-200"}`}
+                  />
+                ))}
+              </div>
+              <span className="text-sm font-black">({reviewCount.toLocaleString("ar-SA")})</span>
             </div>
-          </section>
-        )}
-      </div>
+          )}
+          {showFreeShipping && <StoreBadge variant="freeShipping" size="md" />}
+        </div>
 
-      {/* Testimonials & FAQ */}
-      <Testimonials type="product" />
-      <FAQ />
+        <h1 className="text-2xl md:text-3xl font-black leading-tight mb-5">{product.name}</h1>
 
-      {/* Sticky buy bar on mobile */}
-      <StickyBuyBar product={product} onBuy={scrollToCTA} />
-      {/* Spacer for sticky bar */}
-      <div className="h-20 md:hidden" />
-    </>
+        <ProductGallery images={images} />
+
+        <div className="mt-7">
+          <ProductOptions
+            selectedSize={selectedSize}
+            setSelectedSize={setSelectedSize}
+            selectedColor={selectedColor}
+            setSelectedColor={setSelectedColor}
+            quantity={quantity}
+            setQuantity={setQuantity}
+            sizes={sizes}
+            colors={colorOptions}
+            unitPrice={unitPrice}
+            comparePrice={comparePrice}
+            productId={product.id}
+          />
+        </div>
+
+        <PaymentMethods />
+        <TrustBadges />
+
+        <div className="border-t border-gray-100 my-4" />
+
+        <ProductFeatures />
+
+        <div className="border-t border-gray-100 my-4" />
+
+        <ReviewsSection reviews={metroReviews} totalCount={reviewCount} />
+
+        <RecommendedProducts products={recommended} />
+
+        <GuideBanner />
+        <FeatureIcons />
+      </main>
+    </div>
   );
 }

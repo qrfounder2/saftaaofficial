@@ -1,106 +1,124 @@
-import React, { useState, useEffect } from "react";
+import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
-
-const ticker = [
-  "شحن مجاني لجميع مناطق المملكة",
-  "الدفع عند الاستلام متاح",
-  "منتجات أصلية ومضمونة",
-  "خصم حصري لفترة محدودة",
-  "شحن سريع خلال ٢٤ ساعة",
-  "ضمان استرداد كامل",
-  "شحن مجاني لجميع مناطق المملكة",
-  "الدفع عند الاستلام متاح",
-  "منتجات أصلية ومضمونة",
-  "خصم حصري لفترة محدودة",
-  "شحن سريع خلال ٢٤ ساعة",
-  "ضمان استرداد كامل",
-];
+import { useQuery } from "@tanstack/react-query";
+import { storeClient } from "@/api/storeClient";
+import { Skeleton } from "@/components/ui/skeleton";
+import { toMetroCardProduct } from "@/lib/metroProductAdapter";
+import HeroBanner from "@/components/metroooo/HeroBanner";
+import CountdownBanner from "@/components/metroooo/CountdownBanner";
+import ProductCard from "@/components/metroooo/ProductCard";
+import FeatureIcons from "@/components/metroooo/FeatureIcons";
+import { ROUTES, METRO_CATEGORY_TILES } from "@/data/metroLaunchNav";
 
 export default function Home() {
+  const { data: rawProducts = [], isLoading } = useQuery({
+    queryKey: ["products"],
+    queryFn: () => storeClient.entities.Product.filter({ is_active: true }, "-created_date", 50),
+  });
+
+  const metroCards = useMemo(() => rawProducts.map(toMetroCardProduct), [rawProducts]);
+
+  const bestSellers = useMemo(() => {
+    const featured = metroCards.filter((_, i) => rawProducts[i]?.is_featured);
+    const withSales = metroCards.filter((c) => c.bestSeller || c.reviewCount > 0);
+    const pick = featured.length >= 4 ? featured : withSales.length >= 4 ? withSales : metroCards;
+    return pick.slice(0, 8);
+  }, [metroCards, rawProducts]);
+
+  const bundleDeals = useMemo(() => {
+    const bundled = metroCards.filter((_, i) => rawProducts[i]?.metro_ui?.bundle);
+    if (bundled.length) return bundled.slice(0, 8);
+    const packs = metroCards.filter((_, i) => rawProducts[i]?.three_pack_price != null);
+    return (packs.length ? packs : metroCards).slice(0, 8);
+  }, [metroCards, rawProducts]);
+
   return (
-    <div dir="rtl">
-      {/* ── Hero ── */}
-      <section className="relative h-[88vh] md:h-screen overflow-hidden bg-gray-900">
-        {/* Background */}
-        <img
-          src="/images/products/almaral-miracle-hero.png"
-          alt="صفتا كير"
-          fetchpriority="high"
-          decoding="async"
-          onError={(e) => {
-            e.currentTarget.onerror = null;
-            e.currentTarget.src = "/images/products/almaral-premium.png";
-          }}
-          className="absolute inset-0 w-full h-full object-cover object-center"
-        />
+    <div className="min-h-screen bg-white overflow-x-hidden">
+      <HeroBanner />
+      <CountdownBanner />
 
-        {/* Gradient overlay — dark at bottom, lighter at top */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-black/10" />
+      <section className="layout-wide section-stack">
+        <h2 className="heading-section">الأفضل مبيعاً</h2>
+        <div className="heading-rule" />
 
-        {/* Content — bottom-center on mobile, center on desktop */}
-        <div className="absolute inset-0 flex items-end md:items-center justify-center pb-16 md:pb-0">
-          <div className="text-center text-white px-6 max-w-2xl">
-            <motion.p
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-white/60 mb-3"
-            >
-              عروض حصرية · صفتا كير
-            </motion.p>
-
-            <motion.h1
-              initial={{ opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-5xl md:text-7xl font-black leading-[1.05] mb-4 tracking-tight"
-            >
-              تخلص من
-              <br />
-              الألم نهائياً
-            </motion.h1>
-
-            <motion.p
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.35 }}
-              className="text-sm md:text-base text-white/70 font-medium mb-8"
-            >
-              خصم يصل إلى ٤٠٪ على جميع المنتجات لفترة محدودة
-            </motion.p>
-
-            <motion.div
-              initial={{ opacity: 0, scale: 0.93 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.4, delay: 0.5 }}
-            >
-              <Link
-                to="/categories"
-                className="inline-block bg-white text-black px-12 py-4 text-sm font-black tracking-[0.2em] uppercase hover:bg-gray-100 active:scale-95 transition-all duration-150"
-              >
-                تسوق الآن
-              </Link>
-            </motion.div>
+        {isLoading ? (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 lg:gap-5">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="space-y-3">
+                <Skeleton className="aspect-[3/4] rounded-2xl" />
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+              </div>
+            ))}
           </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 lg:gap-5">
+            {bestSellers.map((product, i) => (
+              <ProductCard key={product.link || i} product={product} />
+            ))}
+          </div>
+        )}
+
+        <div className="flex justify-center mt-6 sm:mt-8">
+          <Link to={ROUTES.bestSellers} className="cta-outline-pill">
+            عرض الكل
+          </Link>
         </div>
       </section>
 
-      {/* ── Scrolling ticker ── */}
-      <div className="bg-black text-white py-3 overflow-hidden select-none">
-        {/* Duplicate the list so the loop is visually seamless */}
-        <div className="flex animate-ticker whitespace-nowrap">
-          {[...ticker, ...ticker].map((item, i) => (
-            <span
-              key={i}
-              className="inline-flex items-center gap-4 px-4 text-[11px] md:text-xs font-bold tracking-wider"
+      <section className="layout-wide section-stack-sm border-t border-gray-100/80">
+        <h2 className="heading-section">أقسام المشدات</h2>
+        <div className="heading-rule" />
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
+          {METRO_CATEGORY_TILES.map((cat) => (
+            <Link
+              key={cat.slug}
+              to={`/collections/${cat.slug}`}
+              className="relative aspect-[3/4] rounded-2xl overflow-hidden group"
             >
-              {item}
-              <span className="text-white/25 text-base font-thin">·</span>
-            </span>
+              <img
+                src={cat.image}
+                alt={cat.label}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                loading="lazy"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+              <span className="absolute bottom-3 end-3 sm:bottom-4 sm:end-4 text-white font-black text-xs sm:text-sm leading-snug max-w-[calc(100%-1.5rem)] text-end">
+                {cat.label}
+              </span>
+            </Link>
           ))}
         </div>
-      </div>
+      </section>
+
+      <section className="layout-wide section-stack-sm border-t border-gray-100/80">
+        <h2 className="heading-section">مجموعات التوفير</h2>
+        <div className="heading-rule" />
+
+        {isLoading ? (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 lg:gap-5">
+            {[...Array(4)].map((_, i) => (
+              <Skeleton key={i} className="aspect-[3/4] rounded-2xl" />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 lg:gap-5">
+            {bundleDeals.map((product, i) => (
+              <ProductCard key={`b-${product.link || i}`} product={product} />
+            ))}
+          </div>
+        )}
+
+        <div className="flex justify-center mt-6 sm:mt-8">
+          <Link to={ROUTES.bundles} className="cta-outline-pill">
+            عرض الكل
+          </Link>
+        </div>
+      </section>
+
+      <section className="layout-wide section-stack-sm pb-10 sm:pb-12">
+        <FeatureIcons />
+      </section>
     </div>
   );
 }

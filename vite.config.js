@@ -19,6 +19,10 @@ export default defineConfig({
     chunkSizeWarningLimit: 1000,
   },
   server: {
+    // Listen on all interfaces so Cursor port-forward, LAN, and Simple Browser can connect.
+    host: true,
+    port: 5173,
+    strictPort: false,
     proxy: {
       '/api': {
         target: 'http://localhost:3001',

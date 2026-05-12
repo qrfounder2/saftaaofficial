@@ -5,7 +5,9 @@ module.exports = {
   theme: {
   	extend: {
   		fontFamily: {
-  			tajawal: ['var(--font-tajawal)']
+  			tajawal: ['var(--font-tajawal)'],
+  			cairo: ['var(--font-cairo)', 'sans-serif'],
+  			main: ['var(--font-main)', 'var(--font-tajawal)', 'sans-serif'],
   		},
   		borderRadius: {
   			lg: 'var(--radius)',
@@ -43,6 +45,10 @@ module.exports = {
   				DEFAULT: 'hsl(var(--destructive))',
   				foreground: 'hsl(var(--destructive-foreground))'
   			},
+  			success: {
+  				DEFAULT: 'hsl(var(--success))',
+  				foreground: 'hsl(var(--success-foreground))'
+  			},
   			border: 'hsl(var(--border))',
   			input: 'hsl(var(--input))',
   			ring: 'hsl(var(--ring))',
@@ -52,6 +58,12 @@ module.exports = {
   				'3': 'hsl(var(--chart-3))',
   				'4': 'hsl(var(--chart-4))',
   				'5': 'hsl(var(--chart-5))'
+  			},
+  			brand: {
+  				black: '#111111',
+  				gold: '#f5c842',
+  				pink: '#f9e8ec',
+  				rose: '#e8b4c0',
   			},
   			sidebar: {
   				DEFAULT: 'hsl(var(--sidebar-background))',

@@ -11,9 +11,10 @@ import StoreLayout from './components/store/StoreLayout';
 
 const Home = lazy(() => import('./pages/Home'));
 const Categories = lazy(() => import('./pages/Categories'));
-const ProductPage = lazy(() => import('./pages/ProductPage'));
+const Collections = lazy(() => import('./pages/Collections'));
 const OrderForm = lazy(() => import('./pages/OrderForm'));
 const ThankYou = lazy(() => import('./pages/ThankYou'));
+const ProductPage = lazy(() => import('./pages/ProductPage'));
 const AdminLogin = lazy(() => import('./pages/AdminLogin'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 
@@ -78,8 +79,11 @@ const AuthenticatedApp = () => {
       <Routes>
         <Route element={<StoreLayout />}>
           <Route path="/" element={<Home />} />
-          <Route path="/categories" element={<Categories />} />
           <Route path="/product/:slug" element={<ProductPage />} />
+          <Route path="/categories" element={<Categories />} />
+          <Route path="/collections" element={<Categories />} />
+          <Route path="/collections/:slug" element={<Collections />} />
+          <Route path="/guide" element={<Collections guideMode />} />
         </Route>
         <Route path="/order" element={<OrderForm />} />
         <Route path="/thank-you" element={<ThankYou />} />

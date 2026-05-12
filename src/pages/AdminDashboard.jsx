@@ -575,9 +575,9 @@ export default function AdminDashboard() {
                                 <div className="flex items-center gap-2 mt-1">
                                   <p className="text-xs text-gray-500 font-mono">{product.id}</p>
                                   <span className="text-gray-300">|</span>
-                                  <a href={`https://saftaa.shop/product/${product.slug}`} target="_blank" rel="noreferrer" className="text-xs text-emerald-600 hover:text-emerald-700 font-mono flex items-center gap-1 group">
+                                  <a href={`https://saftaa.shop/order?product=${encodeURIComponent(product.id)}&pack=1&price=${encodeURIComponent(product.price)}`} target="_blank" rel="noreferrer" className="text-xs text-emerald-600 hover:text-emerald-700 font-mono flex items-center gap-1 group">
                                     <LinkIcon className="w-3 h-3 group-hover:scale-110 transition-transform" />
-                                    saftaa.shop/product/{product.slug}
+                                    saftaa.shop/order (طلب)
                                   </a>
                                 </div>
                               </div>

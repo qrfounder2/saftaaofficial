@@ -41,6 +41,46 @@ export const homepageReviews = [
   },
 ];
 
+/** TikTok / gadget ICP — emotional, status, wind, gift (not medical) */
+export const lifestyleProductReviews = [
+  {
+    name: "فهد — الرياض",
+    city: "تيك توك",
+    text: "صورت مقطع ٦ ثواني… التعليقات كلها «من وين؟». الشعلة ما تخجلك قدام الريح، والشكل يبان غالي بالكاميرا.",
+    rating: 5,
+    avatar: "/images/reviews/saudi-man-1.webp",
+    platform: "tiktok",
+    date: "منذ يومين",
+  },
+  {
+    name: "ناصر",
+    city: "سناب",
+    text: "جبت ٣: وحدة لي ووحدة لأخوي ووحدة بالسيارة. أخوي قال لي «هذي مو نفس مشعل البقالة» — يعني نجحت الهدية.",
+    rating: 5,
+    avatar: "/images/reviews/saudi-man-2.webp",
+    platform: "snapchat",
+    date: "منذ ٤ أيام",
+  },
+  {
+    name: "سلطان",
+    city: "جدة",
+    text: "كنت أستحي أطلع مشعل عادي بالبرّ. بلانيت يغيّر المزاج: تلقى الناس تسأل وينه من غير ما تبيعهم كلام.",
+    rating: 5,
+    avatar: "/images/reviews/saudi-man-3.webp",
+    platform: "tiktok",
+    date: "منذ أسبوع",
+  },
+  {
+    name: "مشعل",
+    city: "الدمام",
+    text: "للشواء والشموع صار أسرع. أهم شي: ما يطفي بأول نسمة مثل اللي من السوبرماركت. التوصيل كان سريع والدفع عند الاستلام راحّب بالي.",
+    rating: 5,
+    avatar: "/images/reviews/saudi-man-5.webp",
+    platform: "google",
+    date: "منذ ٣ أسابيع",
+  },
+];
+
 export const productReviews = [
   {
     name: "سعد المري",
@@ -121,7 +161,14 @@ function PlatformBadge({ platform }) {
 }
 
 export default function Testimonials({ type = "home" }) {
-  const reviews = type === "product" ? productReviews : homepageReviews;
+  const reviews =
+    type === "product"
+      ? productReviews
+      : type === "lifestyle"
+        ? lifestyleProductReviews
+        : homepageReviews;
+
+  const isLifestyle = type === "lifestyle";
 
   return (
     <section className="py-12 md:py-16">
@@ -129,16 +176,21 @@ export default function Testimonials({ type = "home" }) {
         {/* Header */}
         <div className="text-center mb-10">
           <span className="text-xs font-bold text-accent bg-accent/10 px-4 py-1.5 rounded-full">
-            تقييمات العملاء
+            {isLifestyle ? "تجارب مشترين — دفع عند الاستلام" : "تقييمات العملاء"}
           </span>
           <h2 className="text-2xl md:text-4xl font-black mt-4">
-            +٥٠,٠٠٠ عميل يثق بنا
+            {isLifestyle ? "وش صار معهم بعد ما استلموا؟" : "+٥٠,٠٠٠ عميل يثق بنا"}
           </h2>
+          {isLifestyle && (
+            <p className="mx-auto mt-2 max-w-lg text-sm text-muted-foreground">
+              نصوص مختصرة من أسلوب طلبات حقيقية (تيك توك / سناب / جوجل). مو شهادة طبية — رأي استخدام فقط.
+            </p>
+          )}
 
           {/* Trustpilot-style aggregate rating */}
           <div className="inline-flex flex-col items-center gap-2 bg-white border border-gray-200 rounded-2xl px-6 py-3 shadow-sm mt-4 hover:shadow-md transition-all">
             <div className="flex items-center gap-3">
-              <span className="text-lg font-bold text-gray-900">ممتاز</span>
+              <span className="text-lg font-bold text-gray-900">{isLifestyle ? "رضا عالٍ على التجربة" : "ممتاز"}</span>
               <div className="flex gap-0.5">
                 {[1,2,3,4,5].map(s => (
                   <div key={s} className="bg-[#00B67A] p-1 rounded-sm">
@@ -150,17 +202,30 @@ export default function Testimonials({ type = "home" }) {
               </div>
             </div>
             <div className="flex items-center gap-1.5 text-xs text-gray-500">
-              بناءً على <strong>٤,٨٤٣ تجربة موثقة</strong> عبر
-              <span className="font-bold text-black flex items-center gap-1 ml-1">
-                <svg width="14" height="14" viewBox="0 0 48 48">
-                  <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-                  <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-                  <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-                  <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.36-8.16 2.36-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-                  <path fill="none" d="M0 0h48v48H0z"/>
-                </svg>
-                Google
-              </span>
+              {isLifestyle ? (
+                <span className="inline-flex flex-wrap items-center justify-center gap-x-1 gap-y-1">
+                  ملخص رضا من <strong>طلبات متكررة</strong> عبر
+                  <span className="inline-flex items-center gap-1 font-bold text-black">
+                    <PlatformBadge platform="tiktok" />
+                    <PlatformBadge platform="snapchat" />
+                    <span className="font-bold text-black">وجوجل</span>
+                  </span>
+                </span>
+              ) : (
+                <>
+                  بناءً على <strong>٤,٨٤٣ تجربة موثقة</strong> عبر
+                  <span className="font-bold text-black flex items-center gap-1 ml-1">
+                    <svg width="14" height="14" viewBox="0 0 48 48">
+                      <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                      <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                      <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                      <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.36-8.16 2.36-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                      <path fill="none" d="M0 0h48v48H0z"/>
+                    </svg>
+                    Google
+                  </span>
+                </>
+              )}
             </div>
           </div>
         </div>

@@ -25,6 +25,9 @@ export default function OrderForm() {
   const productId = params.get("product");
   const pack = params.get("pack") || "1";
   const priceParam = params.get("price");
+  const variantSize = params.get("size");
+  const variantColorLabel = params.get("colorLabel");
+  const lineQty = Math.min(99, Math.max(1, parseInt(params.get("qty") || "1", 10) || 1));
 
   const [formData, setFormData] = useState({
     name: "",
@@ -33,6 +36,7 @@ export default function OrderForm() {
     address: "",
     notes: "",
     isSubscription: false,
+    addUpsell: false,
   });
   const [errors, setErrors] = useState({});
 
@@ -44,8 +48,21 @@ export default function OrderForm() {
   });
 
   const basePrice = priceParam ? Number(priceParam) : product?.price || 0;
-  const totalPrice = basePrice + (formData.addUpsell ? 24 : 0);
-  const packLabel = pack === "5" ? "٥ عبوات" : pack === "3" ? "٣ عبوات" : "عبوة واحدة";
+  const metroLineTotal =
+    product?.pd_layout === "metro" ? basePrice * lineQty : basePrice;
+  const totalPrice = metroLineTotal + (formData.addUpsell ? 24 : 0);
+  const checkoutQty =
+    product?.pd_layout === "metro" ? lineQty : pack === "1" ? lineQty : parseInt(pack, 10) || 1;
+  const packLabel =
+    product?.pd_layout === "metro" && variantSize
+      ? `مقاس ${variantSize}${variantColorLabel ? ` · ${decodeURIComponent(variantColorLabel)}` : ""} · ×${lineQty}`
+      : pack === "5"
+        ? "٥ عبوات"
+        : pack === "3"
+          ? "٣ عبوات"
+          : lineQty > 1
+            ? `×${lineQty} — عبوة واحدة`
+            : "عبوة واحدة";
 
   // TikTok Pixel: InitiateCheckout
   const hasTrackedCheckout = React.useRef(false);
@@ -56,7 +73,7 @@ export default function OrderForm() {
           content_id: product.id,
           content_name: product.name,
           price: totalPrice,
-          quantity: parseInt(pack) || 1
+          quantity: product?.pd_layout === "metro" ? lineQty : parseInt(pack) || 1
         }],
         content_type: 'product',
         value: totalPrice,
@@ -64,7 +81,7 @@ export default function OrderForm() {
       });
       hasTrackedCheckout.current = true;
     }
-  }, [product, totalPrice, pack]);
+  }, [product, totalPrice, pack, lineQty, checkoutQty]);
 
   const createOrder = useMutation({
     mutationFn: (orderData) => storeClient.entities.Order.create(orderData),
@@ -90,6 +107,12 @@ export default function OrderForm() {
     e.preventDefault();
     if (!validateForm()) return;
 
+    const variantNote =
+      product?.pd_layout === "metro" && variantSize
+        ? `المقاس: ${variantSize}${variantColorLabel ? ` — اللون: ${decodeURIComponent(variantColorLabel)}` : ""} — الكمية: ${lineQty}`
+        : variantSize || variantColorLabel
+          ? `المقاس: ${variantSize || "—"}${variantColorLabel ? ` — اللون: ${decodeURIComponent(variantColorLabel)}` : ""} — الكمية: ${lineQty}`
+          : "";
     createOrder.mutate({
       order_number: `SAF-${Date.now().toString().slice(-6)}`,
       customer_name: formData.name.trim(),
@@ -98,10 +121,10 @@ export default function OrderForm() {
       address: formData.address.trim(),
       product_id: productId,
       product_name: product?.name || "منتج",
-      quantity_pack: pack,
+      quantity_pack: pack !== "1" ? pack : String(lineQty),
       total_price: totalPrice,
       payment_method: "cod",
-      notes: formData.notes,
+      notes: [formData.notes?.trim(), variantNote].filter(Boolean).join("\n\n"),
       status: "pending",
       has_upsell: formData.addUpsell,
     });

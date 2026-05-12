@@ -16,7 +16,7 @@ export default function ProductCard({ product, index = 0 }) {
       transition={{ delay: index * 0.08 }}
     >
       <Link
-        to={`/product/${product.slug}`}
+        to={`/product/${encodeURIComponent(product.slug || product.id)}`}
         className="group block elegant-surface rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-500 hover:-translate-y-1"
       >
         {/* Image */}
