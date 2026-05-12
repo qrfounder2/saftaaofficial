@@ -1,26 +1,11 @@
-import React from 'react';
+import React from "react";
+import PaymentLogoStrip from "@/components/store/PaymentLogoStrip";
+import { cn } from "@/lib/utils";
 
-const methods = [
-  { label: 'VISA', style: 'font-bold italic' },
-  { label: 'Mastercard', style: 'font-bold' },
-  { label: 'Apple Pay', style: 'font-bold' },
-  { label: 'G Pay', style: 'font-bold' },
-  { label: 'mada', style: 'font-bold text-[10px]' },
-  { label: 'tabby', style: 'font-bold' },
-  { label: '●●', style: 'font-bold text-purple-700' },
-];
-
-export default function PaymentMethods() {
+export default function PaymentMethods({ className, stripClassName }) {
   return (
-    <div className="flex flex-wrap items-center justify-center gap-1.5 py-4">
-      {methods.map((method) => (
-        <div
-          key={method.label}
-          className={`px-2.5 py-1.5 border border-border rounded-lg text-[11px] bg-background ${method.style}`}
-        >
-          {method.label}
-        </div>
-      ))}
+    <div className={cn("py-3", className)} dir="rtl" aria-label="شعارات طرق الدفع المعتادة">
+      <PaymentLogoStrip size="md" className={cn("max-w-full", stripClassName ?? "justify-center")} />
     </div>
   );
 }

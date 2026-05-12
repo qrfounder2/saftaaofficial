@@ -68,7 +68,8 @@ export const METRO_LAUNCH_PRODUCT_ROWS = [
   },
   {
     id: '47120',
-    handle: 'best-technique-high-waist-slim-shapewear-corset-bermuda-47120',
+    sku: '7Xo9uQDDdN',
+    handle: 'freeza',
     name: 'مشد برمودا ناعم لنحت الخصر بتقنية الضغط المتوازن',
     image: 'https://cdn.shopify.com/s/files/1/2598/9598/files/276845-800-auto.png?v=1773130226',
     price: 330,
@@ -79,7 +80,7 @@ export const METRO_LAUNCH_PRODUCT_ROWS = [
     freeShipping: true,
     compression: 'عالي',
     colors: ['#D4B896', '#111111'],
-    link: '/products/best-technique-high-waist-slim-shapewear-corset-bermuda-47120',
+    link: '/poduct/freeza',
     packTierLabels: {
       1: { title: 'برمودا مشد واحدة', subtitle: '(ضغط متوازن للخصر — مقاسك)', bundleLabel: 'قطعة واحدة' },
       3: {

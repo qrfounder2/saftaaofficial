@@ -46,6 +46,7 @@ function launchRowToProduct(row, index) {
     id: String(row.id),
     name: row.name,
     slug,
+    sku: row.sku ? String(row.sku) : undefined,
     description: row.name,
     short_description: `${row.name} — ضغط ${row.compression || "عالي"}. منتجات أصلية مع شحن داخل المملكة.`,
     price: Number(row.price) || 0,

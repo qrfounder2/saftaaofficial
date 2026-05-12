@@ -1,51 +1,70 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function ProductGallery({ images }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const thumbRef = useRef(null);
+  const list = Array.isArray(images) ? images : [];
+  const hasMultiple = list.length > 1;
 
-  const goNext = () => setActiveIndex((prev) => (prev + 1) % images.length);
-  const goPrev = () => setActiveIndex((prev) => (prev - 1 + images.length) % images.length);
+  useEffect(() => {
+    setActiveIndex((i) => (list.length ? Math.min(i, list.length - 1) : 0));
+  }, [list.length]);
+
+  const goNext = () => setActiveIndex((prev) => (prev + 1) % list.length);
+  const goPrev = () => setActiveIndex((prev) => (prev - 1 + list.length) % list.length);
+
+  if (!list.length) {
+    return (
+      <div className="relative aspect-[3/4] w-full overflow-hidden bg-muted" dir="rtl" aria-hidden />
+    );
+  }
 
   return (
-    <div className="w-full">
+    <div className="w-full" dir="rtl">
       {/* Main image */}
-      <div className="relative aspect-[3/4] bg-white overflow-hidden">
+      <div className="relative aspect-[3/4] overflow-hidden bg-white">
         <img
-          src={images[activeIndex]}
+          src={list[activeIndex]}
           alt="صورة المنتج"
-          className="w-full h-full object-contain"
+          className="h-full w-full object-contain"
         />
-        {/* Navigation arrows */}
-        <button
-          onClick={goNext}
-          className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur-sm rounded-full p-2 shadow-lg hover:bg-white transition-colors"
-        >
-          <ChevronRight className="w-5 h-5" />
-        </button>
-        <button
-          onClick={goPrev}
-          className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur-sm rounded-full p-2 shadow-lg hover:bg-white transition-colors"
-        >
-          <ChevronLeft className="w-5 h-5" />
-        </button>
+        {hasMultiple ? (
+          <>
+            <button
+              type="button"
+              onClick={goNext}
+              className="absolute end-3 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-2 shadow-lg backdrop-blur-sm transition-colors hover:bg-white"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
+            <button
+              type="button"
+              onClick={goPrev}
+              className="absolute start-3 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-2 shadow-lg backdrop-blur-sm transition-colors hover:bg-white"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+          </>
+        ) : null}
       </div>
 
-      {/* Thumbnails row */}
-      <div ref={thumbRef} className="flex gap-2 mt-3 overflow-x-auto pb-2" style={{ scrollbarWidth: 'none' }}>
-        {images.map((img, index) => (
-          <button
-            key={index}
-            onClick={() => setActiveIndex(index)}
-            className={`flex-shrink-0 w-[60px] h-[60px] rounded-md overflow-hidden border-2 transition-all ${
-              index === activeIndex ? 'border-primary opacity-100' : 'border-transparent opacity-50 hover:opacity-80'
-            }`}
-          >
-            <img src={img} alt="" className="w-full h-full object-cover" />
-          </button>
-        ))}
-      </div>
+      {hasMultiple ? (
+        <div ref={thumbRef} className="mt-3 flex gap-2 overflow-x-auto pb-2" style={{ scrollbarWidth: "none" }}>
+          {list.map((img, index) => (
+            <button
+              key={index}
+              type="button"
+              onClick={() => setActiveIndex(index)}
+              className={`flex-shrink-0 w-[60px] h-[60px] rounded-md overflow-hidden border-2 transition-all ${
+                index === activeIndex ? "border-primary opacity-100" : "border-transparent opacity-50 hover:opacity-80"
+              }`}
+            >
+              <img src={img} alt="" className="h-full w-full object-cover" />
+            </button>
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 }

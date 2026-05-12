@@ -1,21 +1,39 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import PaymentMethods from "@/components/metroooo/PaymentMethods";
 
-const QUICK_LINKS = ["من نحن", "تواصل معنا", "الكتالوج"];
-const INFO_LINKS = ["الوظائف", "تتبع الطلبات", "عملاء VIP"];
-const POLICY_LINKS = ["الأسئلة المتكررة", "سياسة الخصوصية", "شروط الخدمة", "سياسة الشحن", "الاستبدال والاسترجاع"];
+const QUICK_LINKS = [
+  { label: "من نحن", to: "/info/about" },
+  { label: "تواصل معنا", to: "/info/contact" },
+  { label: "الكتالوج", to: "/categories" },
+];
+const INFO_LINKS = [
+  { label: "الوظائف", to: "/info/careers" },
+  { label: "تتبع الطلبات", to: "/info/track-order" },
+  { label: "عملاء VIP", to: "/info/vip" },
+];
+const POLICY_LINKS = [
+  { label: "الأسئلة المتكررة", to: "/info/faq" },
+  { label: "سياسة الخصوصية", to: "/info/privacy" },
+  { label: "شروط الخدمة", to: "/info/terms" },
+  { label: "سياسة الشحن", to: "/info/shipping" },
+  { label: "الاستبدال والاسترجاع", to: "/info/returns" },
+];
 
 const Section = ({ title, links }) => (
-  <div className="text-center">
-    <h4 className="font-black text-base mb-4">{title}</h4>
-    {links.map((l) => (
-      <p
-        key={l}
-        className="text-sm text-gray-500 py-1.5 hover:text-black cursor-pointer transition-colors"
-      >
-        {l}
-      </p>
-    ))}
+  <div className="text-center md:text-right">
+    <h4 className="mb-4 text-base font-black">{title}</h4>
+    <nav className="flex flex-col gap-0.5">
+      {links.map((item) => (
+        <Link
+          key={item.label}
+          to={item.to}
+          className="cursor-pointer py-1.5 text-sm font-medium text-gray-500 transition-colors hover:text-black"
+        >
+          {item.label}
+        </Link>
+      ))}
+    </nav>
   </div>
 );
 

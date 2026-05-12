@@ -4,6 +4,7 @@ import { Menu, X, ShoppingBag, Flame, Truck, Clock } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 import BrandLogo from "./BrandLogo";
+import { metroWhatsAppUrl } from "@/lib/metroWa";
 
 // Counts down to tonight at midnight (KSA = UTC+3).
 // Resets every day — feels like a real daily deal deadline.
@@ -88,7 +89,7 @@ export default function Navbar() {
     { label: "المنتجات", href: "/categories" },
     { label: "آلام الظهر", href: "/categories?cat=back" },
     { label: "آلام الركبة", href: "/categories?cat=knee" },
-    { label: "تواصل معنا", href: "https://wa.me/966501234567" },
+    { label: "تواصل معنا", href: metroWhatsAppUrl() },
   ];
 
   return (

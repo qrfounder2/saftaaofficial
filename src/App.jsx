@@ -2,7 +2,7 @@ import { lazy, Suspense, useEffect, useRef } from 'react';
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
@@ -15,6 +15,7 @@ const Collections = lazy(() => import('./pages/Collections'));
 const OrderForm = lazy(() => import('./pages/OrderForm'));
 const ThankYou = lazy(() => import('./pages/ThankYou'));
 const ProductPage = lazy(() => import('./pages/ProductPage'));
+const MetroContentPage = lazy(() => import('./pages/MetroContentPage'));
 const AdminLogin = lazy(() => import('./pages/AdminLogin'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 
@@ -79,11 +80,18 @@ const AuthenticatedApp = () => {
       <Routes>
         <Route element={<StoreLayout />}>
           <Route path="/" element={<Home />} />
+          <Route
+            path="/product/best-technique-high-waist-slim-shapewear-corset-bermuda-47120"
+            element={<Navigate to="/poduct/freeza" replace />}
+          />
           <Route path="/product/:slug" element={<ProductPage />} />
+          <Route path="/poduct/:slug" element={<ProductPage />} />
           <Route path="/categories" element={<Categories />} />
           <Route path="/collections" element={<Categories />} />
           <Route path="/collections/:slug" element={<Collections />} />
           <Route path="/guide" element={<Collections guideMode />} />
+          <Route path="/info/:slug" element={<MetroContentPage />} />
+          <Route path="/catalog" element={<Navigate to="/categories" replace />} />
         </Route>
         <Route path="/order" element={<OrderForm />} />
         <Route path="/thank-you" element={<ThankYou />} />

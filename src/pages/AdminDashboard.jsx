@@ -10,6 +10,13 @@ const isValidKSAPhone = (phone) => {
   return regex.test((phone || '').replace(/\s+/g, ''));
 };
 
+/** Storefront PDP path (matches App routes; Freeza uses /poduct/ as requested). */
+function storefrontPdpHref(product) {
+  const slug = product?.slug || "";
+  if (slug === "freeza" || product?.sku === "7Xo9uQDDdN") return "/poduct/freeza";
+  return `/product/${encodeURIComponent(slug || product?.id || "")}`;
+}
+
 const StatusBadge = ({ status }) => {
   const statusStyles = {
       'pending': 'bg-yellow-100 text-yellow-800',
@@ -377,7 +384,9 @@ export default function AdminDashboard() {
     if (!normalizedProductSearch) return true;
     return (
       product.name?.toLowerCase().includes(normalizedProductSearch) ||
-      product.id?.toLowerCase().includes(normalizedProductSearch)
+      product.id?.toLowerCase().includes(normalizedProductSearch) ||
+      product.slug?.toLowerCase().includes(normalizedProductSearch) ||
+      product.sku?.toLowerCase().includes(normalizedProductSearch)
     );
   });
 
@@ -559,7 +568,7 @@ export default function AdminDashboard() {
                             type="text"
                             value={productSearch}
                             onChange={(e) => setProductSearch(e.target.value)}
-                            placeholder="Search product by name or ID"
+                            placeholder="Search by name, ID, slug, or SKU"
                             className="w-full sm:w-72 border border-gray-300 rounded-md px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none"
                           />
                           <span className="text-sm text-gray-500 hidden sm:inline">Auto-syncs with storefront</span>
@@ -572,13 +581,37 @@ export default function AdminDashboard() {
                               <img src={product.images[0]} alt={product.name} loading="lazy" decoding="async" className="w-16 h-16 object-cover rounded-lg border border-gray-100 bg-gray-50" />
                               <div>
                                 <h3 className="font-bold text-gray-900 text-sm md:text-base">{product.name}</h3>
-                                <div className="flex items-center gap-2 mt-1">
-                                  <p className="text-xs text-gray-500 font-mono">{product.id}</p>
-                                  <span className="text-gray-300">|</span>
-                                  <a href={`https://saftaa.shop/order?product=${encodeURIComponent(product.id)}&pack=1&price=${encodeURIComponent(product.price)}`} target="_blank" rel="noreferrer" className="text-xs text-emerald-600 hover:text-emerald-700 font-mono flex items-center gap-1 group">
-                                    <LinkIcon className="w-3 h-3 group-hover:scale-110 transition-transform" />
-                                    saftaa.shop/order (طلب)
-                                  </a>
+                                <div className="flex flex-col gap-0.5 mt-1">
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <p className="text-xs text-gray-500 font-mono">id: {product.id}</p>
+                                    {product.slug && (
+                                      <>
+                                        <span className="text-gray-300">|</span>
+                                        <p className="text-xs text-gray-500 font-mono">slug: {product.slug}</p>
+                                      </>
+                                    )}
+                                    {product.sku && (
+                                      <>
+                                        <span className="text-gray-300">|</span>
+                                        <p className="text-xs text-gray-500 font-mono">SKU: {product.sku}</p>
+                                      </>
+                                    )}
+                                  </div>
+                                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                                    <a
+                                      href={storefrontPdpHref(product)}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1 group"
+                                    >
+                                      <LinkIcon className="w-3 h-3 group-hover:scale-110 transition-transform" />
+                                      Product page (PDP)
+                                    </a>
+                                    <a href={`https://saftaa.shop/order?product=${encodeURIComponent(product.id)}&pack=1&price=${encodeURIComponent(product.price)}`} target="_blank" rel="noreferrer" className="text-xs text-emerald-600 hover:text-emerald-700 font-mono flex items-center gap-1 group">
+                                      <LinkIcon className="w-3 h-3 group-hover:scale-110 transition-transform" />
+                                      saftaa.shop/order (طلب)
+                                    </a>
+                                  </div>
                                 </div>
                               </div>
                             </div>

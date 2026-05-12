@@ -3,21 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { storeClient } from "@/api/storeClient";
 import { motion } from "framer-motion";
-import { MapPin, Phone, User, Check, Loader2, ArrowLeft, Truck, Clock, Shield, Headset, Banknote } from "lucide-react";
+import { Phone, User, Check, Loader2, ArrowLeft, Truck, Clock, Shield, Headset, Banknote, Wrench } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 
-import { paymentIcons } from "../lib/payments";
+import PaymentLogoStrip from "@/components/store/PaymentLogoStrip";
 
-const cities = [
-  "الرياض", "جدة", "مكة المكرمة", "المدينة المنورة", "الدمام", "الخبر",
-  "الظهران", "الأحساء", "الطائف", "تبوك", "بريدة", "حائل", "خميس مشيط",
-  "أبها", "نجران", "جازان", "ينبع", "القطيف", "الجبيل", "عنيزة",
-  "الباحة", "سكاكا", "عرعر", "الزلفي", "المجمعة", "الخرج", "الدوادمي",
-  "القصيم", "حفر الباطن", "رابغ", "أخرى"
-];
+/** Stored on every order for Sheets / CRM; call center completes real address by phone. */
+const DEFAULT_REGION = "KSA";
 
 export default function OrderForm() {
   const navigate = useNavigate();
@@ -27,15 +20,28 @@ export default function OrderForm() {
   const priceParam = params.get("price");
   const variantSize = params.get("size");
   const variantColorLabel = params.get("colorLabel");
+  const linesEncoded = params.get("lines");
   const lineQty = Math.min(99, Math.max(1, parseInt(params.get("qty") || "1", 10) || 1));
+
+  let variantLines = [];
+  if (linesEncoded) {
+    try {
+      const parsed = JSON.parse(linesEncoded);
+      variantLines = Array.isArray(parsed) ? parsed : [];
+    } catch {
+      try {
+        const parsed = JSON.parse(decodeURIComponent(linesEncoded));
+        variantLines = Array.isArray(parsed) ? parsed : [];
+      } catch {
+        variantLines = [];
+      }
+    }
+  }
 
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
-    city: "",
-    address: "",
     notes: "",
-    isSubscription: false,
     addUpsell: false,
   });
   const [errors, setErrors] = useState({});
@@ -54,15 +60,19 @@ export default function OrderForm() {
   const checkoutQty =
     product?.pd_layout === "metro" ? lineQty : pack === "1" ? lineQty : parseInt(pack, 10) || 1;
   const packLabel =
-    product?.pd_layout === "metro" && variantSize
-      ? `مقاس ${variantSize}${variantColorLabel ? ` · ${decodeURIComponent(variantColorLabel)}` : ""} · ×${lineQty}`
-      : pack === "5"
-        ? "٥ عبوات"
-        : pack === "3"
-          ? "٣ عبوات"
-          : lineQty > 1
-            ? `×${lineQty} — عبوة واحدة`
-            : "عبوة واحدة";
+    product?.pd_layout === "metro" && variantLines.length > 1
+      ? `${lineQty} قطع — ألوان ومقاسات مختلفة (التفاصيل مع الطلب)`
+      : product?.pd_layout === "metro" && variantLines.length === 1
+        ? `مقاس ${variantLines[0].size}${variantLines[0].colorLabel ? ` · ${variantLines[0].colorLabel}` : ""} · ×${lineQty}`
+        : product?.pd_layout === "metro" && variantSize
+          ? `مقاس ${variantSize}${variantColorLabel ? ` · ${decodeURIComponent(variantColorLabel)}` : ""} · ×${lineQty}`
+          : pack === "5"
+            ? "٥ عبوات"
+            : pack === "3"
+              ? "٣ عبوات"
+              : lineQty > 1
+                ? `×${lineQty} — عبوة واحدة`
+                : "عبوة واحدة";
 
   // TikTok Pixel: InitiateCheckout
   const hasTrackedCheckout = React.useRef(false);
@@ -97,8 +107,6 @@ export default function OrderForm() {
     else if (!/^(05|5|9665)\d{8}$/.test(formData.phone.replace(/\s/g, ""))) {
       newErrors.phone = "أدخل رقم جوال صحيح";
     }
-    if (!formData.city) newErrors.city = "المدينة مطلوبة";
-    if (!formData.address.trim()) newErrors.address = "العنوان مطلوب";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -108,17 +116,26 @@ export default function OrderForm() {
     if (!validateForm()) return;
 
     const variantNote =
-      product?.pd_layout === "metro" && variantSize
-        ? `المقاس: ${variantSize}${variantColorLabel ? ` — اللون: ${decodeURIComponent(variantColorLabel)}` : ""} — الكمية: ${lineQty}`
-        : variantSize || variantColorLabel
-          ? `المقاس: ${variantSize || "—"}${variantColorLabel ? ` — اللون: ${decodeURIComponent(variantColorLabel)}` : ""} — الكمية: ${lineQty}`
-          : "";
+      product?.pd_layout === "metro" && variantLines.length > 0
+        ? [
+            `الكمية الإجمالية: ${lineQty}`,
+            "تفاصيل القطع:",
+            ...variantLines.map(
+              (l, i) =>
+                `#${i + 1}: مقاس ${l.size} — اللون: ${l.colorLabel || l.colorId || "—"}`,
+            ),
+          ].join("\n")
+        : product?.pd_layout === "metro" && variantSize
+          ? `المقاس: ${variantSize}${variantColorLabel ? ` — اللون: ${decodeURIComponent(variantColorLabel)}` : ""} — الكمية: ${lineQty}`
+          : variantSize || variantColorLabel
+            ? `المقاس: ${variantSize || "—"}${variantColorLabel ? ` — اللون: ${decodeURIComponent(variantColorLabel)}` : ""} — الكمية: ${lineQty}`
+            : "";
     createOrder.mutate({
       order_number: `SAF-${Date.now().toString().slice(-6)}`,
       customer_name: formData.name.trim(),
       phone: formData.phone.trim(),
-      city: formData.city,
-      address: formData.address.trim(),
+      city: DEFAULT_REGION,
+      address: DEFAULT_REGION,
       product_id: productId,
       product_name: product?.name || "منتج",
       quantity_pack: pack !== "1" ? pack : String(lineQty),
@@ -183,23 +200,25 @@ export default function OrderForm() {
           <div className="bg-card rounded-2xl border p-5">
             <div className="flex items-center gap-2 mb-5">
               <div className="w-8 h-8 rounded-full bg-black/5 flex items-center justify-center">
-                <MapPin className="w-4 h-4 text-black" />
+                <User className="w-4 h-4 text-black" />
               </div>
               <div>
-                <h2 className="font-bold text-sm">أين نرسل طلبك؟</h2>
-                <p className="text-[10px] text-muted-foreground">الرجاء إدخال بيانات التوصيل بدقة لضمان وصول شحنتك بسرعة</p>
+                <h2 className="font-bold text-sm">بيانات التواصل</h2>
+                <p className="text-[10px] text-muted-foreground">
+                  الاسم ورقم الجوال فقط. سيتصل بك فريقنا لتأكيد العنوان الكامل داخل السعودية.
+                </p>
               </div>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <Label className="text-xs font-bold mb-1.5 flex items-center gap-1">
-                  <User className="w-3 h-3" /> الاسم الكامل
+                  <User className="w-3 h-3" /> الاسم الكريم
                 </Label>
                 <Input
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="مثال: محمد أحمد"
+                  placeholder="اكتب اسمك الكامل — نستخدمه للتواصل معك وتأكيد الطلب"
                   className={`rounded-xl border-slate-200 bg-slate-50/80 focus-visible:ring-emerald-500 focus-visible:border-emerald-500 focus-visible:bg-white transition-all shadow-inner ${errors.name ? "border-destructive ring-destructive" : ""}`}
                 />
                 {errors.name && <p className="text-xs text-destructive mt-1">{errors.name}</p>}
@@ -221,34 +240,6 @@ export default function OrderForm() {
               </div>
 
               <div>
-                <Label className="text-xs font-bold mb-1.5 flex items-center gap-1">
-                  <MapPin className="w-3 h-3" /> المدينة
-                </Label>
-                <Select value={formData.city} onValueChange={(val) => setFormData({ ...formData, city: val })}>
-                  <SelectTrigger className={`rounded-xl border-slate-200 bg-slate-50/80 focus:ring-emerald-500 focus:border-emerald-500 focus:bg-white transition-all shadow-inner ${errors.city ? "border-destructive ring-destructive" : ""}`}>
-                    <SelectValue placeholder="اختر مدينتك" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {cities.map((city) => (
-                      <SelectItem key={city} value={city}>{city}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {errors.city && <p className="text-xs text-destructive mt-1">{errors.city}</p>}
-              </div>
-
-              <div>
-                <Label className="text-xs font-bold mb-1.5">العنوان بالتفصيل</Label>
-                <Textarea
-                  value={formData.address}
-                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  placeholder="الحي، الشارع، رقم المبنى أو الشقة"
-                  className={`rounded-xl min-h-[80px] border-slate-200 bg-slate-50/80 focus-visible:ring-emerald-500 focus-visible:border-emerald-500 focus-visible:bg-white transition-all shadow-inner ${errors.address ? "border-destructive ring-destructive" : ""}`}
-                />
-                {errors.address && <p className="text-xs text-destructive mt-1">{errors.address}</p>}
-              </div>
-
-              <div>
                 <Label className="text-xs font-bold mb-1.5">ملاحظات (اختياري)</Label>
                 <Input
                   value={formData.notes}
@@ -258,33 +249,49 @@ export default function OrderForm() {
                 />
               </div>
 
-              {/* Payment Method */}
-              <div className="bg-secondary/50 rounded-xl p-4">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-5 h-5 rounded-full border-2 border-primary bg-primary flex items-center justify-center">
-                    <Check className="w-3 h-3 text-primary-foreground" />
+              {/* Payment: other methods shown as maintenance; COD only path */}
+              <fieldset className="space-y-3 border-0 p-0 m-0 min-w-0">
+                <legend className="text-xs font-bold mb-0.5 block">طريقة الدفع</legend>
+
+                <div
+                  className="rounded-xl border border-dashed border-amber-200 bg-amber-50/70 p-3 space-y-2.5 pointer-events-none select-none"
+                  aria-disabled="true"
+                >
+                  <div className="flex items-start gap-2">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-200/80 text-amber-950">
+                      <Wrench className="h-4 w-4" aria-hidden />
+                    </span>
+                    <div className="min-w-0 pt-0.5">
+                      <p className="text-[11px] font-black text-amber-950 leading-snug">بطاقات الشبكة والتقسيط — تحت التحديث</p>
+                      <p className="text-[10px] text-amber-900/90 leading-relaxed mt-1">
+                        هذه الطرق غير متاحة للاختيار مؤقتاً. نعمل على إعادتها قريباً — شكراً لتفهمكم.
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-bold flex items-center gap-1.5"><Banknote className="w-4 h-4 text-black opacity-80" /> الدفع عند الاستلام</p>
-                    <p className="text-[10px] text-muted-foreground">ادفع نقداً أو بالشبكة عند وصول طلبك</p>
-                  </div>
-                </div>
-                
-                {/* Professional explanation banner */}
-                <div className="bg-blue-50/80 border border-blue-100 rounded-lg p-3 flex gap-2 items-start mt-2">
-                  <div className="mt-0.5 shrink-0">
-                    <svg className="w-4 h-4 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="text-[11px] font-bold text-blue-900 leading-relaxed mb-0.5">الدفع عند الاستلام متاح مجاناً</p>
-                    <p className="text-[10px] text-blue-700 leading-relaxed">
-                      لسلامتك وراحتك، وفرنا خدمة (الدفع عند الاستلام). عاين منتجك بنفسك ولا تدفع ريالاً واحداً حتى تستلمه بيدك.
-                    </p>
+                  <div className="relative rounded-lg border border-amber-100 bg-white/60 px-2 py-2">
+                    <PaymentLogoStrip size="sm" maintenance className="justify-center py-0.5" />
+                    <p className="text-[9px] text-center font-bold text-amber-900/80 pt-1.5">غير متاح الآن</p>
                   </div>
                 </div>
-              </div>
+
+                <div className="rounded-xl border-2 border-emerald-600 bg-gradient-to-b from-emerald-50/90 to-white p-4 shadow-sm ring-2 ring-emerald-500/15">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white shadow-md" aria-hidden>
+                      <Check className="h-5 w-5" strokeWidth={2.5} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-black text-emerald-950 flex flex-wrap items-center gap-2">
+                        <Banknote className="h-4 w-4 text-emerald-800 shrink-0" aria-hidden />
+                        الدفع عند الاستلام
+                      </p>
+                      <p className="mt-1 text-[10px] font-bold text-emerald-800">الطريقة المتاحة — أكمل الاسم والجوال ثم اضغط التأكيد</p>
+                      <p className="mt-1.5 text-[10px] leading-relaxed text-emerald-900/85">
+                        ادفع نقداً أو ببطاقتك عند استلام الشحنة. لا نطلب بطاقة على الموقع في هذه المرحلة.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </fieldset>
 
               {/* Premium Service Upsell (Native App Style) */}
               <div className="relative mt-6 mb-4">
@@ -373,16 +380,6 @@ export default function OrderForm() {
               <Headset className="w-6 h-6 mx-auto mb-1.5 text-black opacity-80" />
               <p className="text-[10px] font-bold">خدمة عملاء ٢٤/٧</p>
             </div>
-          </div>
-          {/* Real Payment / Trust Badges */}
-          <div className="flex items-center justify-center gap-1.5 mt-5 flex-nowrap w-full overflow-x-auto pb-1">
-            <span className="text-[10px] text-gray-500 ml-1 font-medium whitespace-nowrap">طرق الدفع الآمنة:</span>
-            <img src={paymentIcons.mada} alt="mada" className="h-3.5 object-contain shrink-0" />
-            <img src={paymentIcons.visa} alt="visa" className="h-3.5 object-contain shrink-0" />
-            <img src={paymentIcons.mastercard} alt="mastercard" className="h-3.5 object-contain shrink-0" />
-            <img src={paymentIcons.applepay} alt="apple pay" className="h-3.5 object-contain shrink-0" />
-            <img src={paymentIcons.tabby} alt="tabby" className="h-3.5 object-contain shrink-0" />
-            <img src={paymentIcons.tamara} alt="tamara" className="h-3.5 object-contain shrink-0" />
           </div>
         </motion.div>
       </div>

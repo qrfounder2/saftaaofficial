@@ -1,5 +1,6 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { Star, BadgeCheck, Volume2, VolumeX } from "lucide-react";
+import { stripMetroReviewVariantNoise } from "@/lib/metroReviewText";
 
 function InlineVideo({ src, poster }) {
   const videoRef = useRef(null);
@@ -59,6 +60,9 @@ function InlineVideo({ src, poster }) {
 }
 
 export default function ReviewCard({ review }) {
+  const body = useMemo(() => stripMetroReviewVariantNoise(review?.text), [review?.text]);
+  const filledStars = Math.min(5, Math.max(0, Math.floor(Number(review?.rating) || 0)));
+
   return (
     <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
       <div className="flex gap-3">
@@ -78,24 +82,18 @@ export default function ReviewCard({ review }) {
             {review.verified && <BadgeCheck className="w-4 h-4 text-blue-500 shrink-0" aria-hidden />}
           </div>
 
-          <div className="flex gap-0.5 mb-2 justify-start">
+          <div className="mb-2 flex justify-start gap-0.5">
             {[...Array(5)].map((_, i) => (
               <Star
                 key={i}
-                className={`w-3.5 h-3.5 ${
-                  i < review.rating ? "fill-yellow-400 text-yellow-400" : "fill-gray-200 text-gray-200"
+                className={`h-3.5 w-3.5 ${
+                  i < filledStars ? "fill-yellow-400 text-yellow-400" : "fill-gray-200 text-gray-200"
                 }`}
               />
             ))}
           </div>
 
-          <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">{review.text}</p>
-
-          {review.variant && (
-            <p className="text-xs text-muted-foreground mt-2">
-              نوع المنتج: <span className="font-bold text-foreground">{review.variant}</span>
-            </p>
-          )}
+          <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">{body}</p>
         </div>
       </div>
     </div>
